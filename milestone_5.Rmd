@@ -1,0 +1,42 @@
+---
+title: 'Milestone #5'
+author: "Kevin Wang"
+date: "3/29/2020"
+output:
+  bookdown::pdf_document2:
+    keep_tex: true
+bibliography: bib.bib
+biblio-style: "apalike"
+link_citations: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# set option to write bib
+
+knitr::write_bib(c("knitr", "stringr"), "bib.bib", width = 60)
+library(gt)
+library(gtsummary)
+library(tidyverse)
+```
+
+## Introduction
+
+This is my PDF document. You may also refer to the Github repo of my final project.^[All analysis for this project can be found at https://github.com/kevpwang/replication_project.git]
+
+<!-- must actually reference texts to generate bibliography -->
+
+My project replicates [Hopkins]. My other referneces are [four citations].
+
+## Graphic
+
+## Overview
+
+This paper builds on prior research and sociological theory suggesting that observation of immigrants' "culturally distinctive" traits induces anti-immigrant attitudes in members of society from the dominant cultural background. Hopkins seeks to empirically determine whether immigrants who appear more "culturally distinctive" generate more hostile responses. Specifically, noting the rapid growth of Hispanic immigration to the US, Hopkins shows a nationally representative sample of non-Hispanic Americans videos, adapted from an ABC news clip, of an "undocumented Hispanic immigrant" expressing support for assimilation and a path to citizenship. The video is edited such that the immigrant is blurred, appears either visibly dark- or light-skinned, and speaks either fluent Spanish, fluent but subtly accented English, or broken English. 8 percent of the sample, the control group, were not shown any video, while the remaining 92 percent was randomly assigned to one of six possible videos (combinations of skin tone and English fluency). After the video, the sample was surveyed about their opinion on a path to citizenship for undocumented immigrants, with answers corresponding to a numerical scale of 1 ("strongly oppose") to 4 ("strongly support"). They were also surveyed on five other immigration-related questions.
+
+Hopkins runs a linear regression on attitudes toward a path to citizenship using skin tone, video language fluency, respondent years of education, conservatism, partisanship, race (white/black), and gender as explanatory variables. He also runs linear or logistic regressions between each of the other five questions and video language fluency. The principal results of the paper relate to the effect of skin tone and language. Hopkins finds that skin tone does not meaningfully shift change attitudes. Moreover, contrary to expectations that more distinctive traits would engender greater hostility, Hopkins finds no difference between exposure to fluent English or Spanish, and significantly increased support for a pathway to citizenship among those who heard broken English. Hopkins theorizes that rather than reinforce perceptions of cultural difference, a broken English speaker actually challenges stereotypes by exemplifying immigrants' desire to assimilate with American norms.
+
+## References
+
+## Appendix
