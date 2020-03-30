@@ -20,6 +20,7 @@ library(gt)
 library(gtsummary)
 library(foreign)
 library(janitor)
+library(rstanarm)
 library(tidyverse)
 ```
 
@@ -31,8 +32,6 @@ This is my PDF document. You may also refer to the Github repo of my final proje
 
 My project replicates @hopkins. My other references are @R-knitr, @R-stringr, @knitr2015, and @knitr2014.
 
-# Graphic
-
 ```{r Load data, echo = FALSE}
 
 # use foreign pkg to read Stata files
@@ -41,9 +40,115 @@ exp1 <- read.dta("data/accentsexp1.dta") %>%
   clean_names()
 exp2 <- read.dta("data/accentsexp2.dta") %>% 
   clean_names()
-
-
 ```
+
+# Graphic
+
+```{r Recode for linear model, echo = FALSE}
+exp1_lin <- exp1 %>% 
+  
+  # Hopkins excludes Hispanics, sensible to exclude people who didn't answer Q7
+  # Recode Q7 using numerical scale.
+  
+  filter(ppethm != "Hispanic") %>% 
+  filter(q7 != "Refused") %>% 
+  mutate(q7 = recode(q7, "Strongly support" = 4,
+                     "Somewhat support" = 3,
+                     "Somewhat oppose" = 2,
+                     "Strongly oppose" = 1)
+         ) %>%
+  
+  # Derive regression variables from condition
+  
+  mutate(dark = case_when(grepl("Dark", condition) ~ 1,
+                          TRUE ~ 0),
+         accented = case_when(grepl("accented", condition) ~ 1,
+                              TRUE ~ 0),
+         video = case_when(grepl("Control", condition) ~ 0,
+                           TRUE ~ 1),
+         spanish = case_when(grepl("Spanish", condition) ~ 1,
+                             TRUE ~ 0)
+         ) %>% 
+  
+  # Data only gives educ attainment, not years. Recode into 
+  # years & make some inferences about vague cases.
+  
+  mutate(years_educ = case_when(grepl("HIGH SCHOOL GRADUATE", ppeduc) ~ 12,
+                                grepl("Some college", ppeduc) ~ 14,
+                                grepl("Professional", ppeduc) ~ 20,
+                                grepl("Bachelor", ppeduc) ~ 16,
+                                grepl("Master", ppeduc) ~ 17,
+                                grepl("12th grade", ppeduc) ~ 12,
+                                grepl("Assoc", ppeduc) ~ 14,
+                                grepl("11th", ppeduc) ~ 11,
+                                grepl("7th", ppeduc) ~ 7.5,
+                                grepl("9th", ppeduc) ~ 9,
+                                grepl("10th", ppeduc) ~ 10,
+                                grepl("No form", ppeduc) ~ 0)
+  ) %>% 
+  
+  # Recode conservative to numerical & exclude "refused".
+  # Recode republican, black, and male to numerical.
+  
+  mutate(conservative = case_when(grepl("Extremely lib", ideo7) ~ 1,
+                          grepl("Slightly lib", ideo7) ~ 3,
+                          grepl("Extremely con", ideo7) ~ 7,
+                          grepl("Slightly con", ideo7) ~ 5,
+                          grepl("Moderate", ideo7) ~ 4,
+                          grepl("Lib", ideo7) ~ 2,
+                          grepl("Con", ideo7) ~ 6,
+                          TRUE ~ -1)
+         ) %>% 
+  filter(conservative != -1) %>% 
+  mutate(republican = case_when(grepl("Not Strong Rep", party7) ~ 6,
+                                grepl("Not Strong Dem", party7) ~ 2,
+                                grepl("Leans Rep", party7) ~ 5,
+                                grepl("Leans Dem", party7) ~ 3,
+                                grepl("Independent", party7) ~ 4,
+                                grepl("Rep", party7) ~ 7,
+                                grepl("Dem", party7) ~ 1)
+         ) %>% 
+  mutate(black = case_when(grepl("Black", ppethm) ~ 1,
+                           TRUE ~ 0)
+         ) %>% 
+  mutate(male = recode(ppgender, "Male" = 1,
+                       "Female" = 0)
+         ) %>% 
+  select(q7, dark, accented, video, spanish, years_educ, conservative, republican,
+                       black, male)
+```
+
+```{r Q7 model, echo = FALSE}
+q7_model <- stan_glm(q7 ~ dark + accented + spanish + video + years_educ + conservative + republican + 
+                       black + male, data = exp1_lin, refresh = 0)
+```
+
+Original graphic from @hopkins:
+
+![](hopkins-graphic.png)
+
+Beautiful graphic:
+
+```{r Graphic, echo = FALSE}
+var_list <- c("accented", "spanish", "video")
+parameters <- tibble(condition = c("Accented English", "Fluent Spanish", "No Video"),
+       coef = map_dbl(var_list, ~pluck(coef(q7_model), .x)),
+       sd = map_dbl(var_list, ~pluck(se(q7_model), .x))
+)
+ggplot(parameters, aes(x = condition, y = coef)) +
+  geom_col(alpha = 0.5, color = "black") +
+  geom_errorbar(aes(ymin = coef - sd, ymax = coef + sd), size = 1, width = 0) +
+  geom_errorbar(aes(ymin = coef - 2 * sd, ymax = coef + 2 * sd), width = 0) +
+  scale_y_continuous(limits = c(-.4, 0.4)) +
+  labs(
+    title = "Support for Pathway to Naturalization",
+    subtitle = "Subjects who heard broken English display significantly more pro-immigrant attitudes",
+    x = "Treatment",
+    y = "Difference from Fluent English",
+    caption = "Support measured numerically from 1 (strongly oppose) to 4 (strongly support)."
+  )
+```
+
 
 # Overview
 
@@ -109,13 +214,13 @@ exp1_new <- exp1 %>%
                           TRUE ~ -1)
          ) %>% 
   filter(conservative != -1) %>% 
-  mutate(republican = case_when(grepl("Not Strong Rep", party7) ~ 2,
-                                grepl("Not Strong Dem", party7) ~ 6,
-                                grepl("Leans Rep", party7) ~ 3,
-                                grepl("Leans Dem", party7) ~ 5,
+  mutate(republican = case_when(grepl("Not Strong Rep", party7) ~ 6,
+                                grepl("Not Strong Dem", party7) ~ 2,
+                                grepl("Leans Rep", party7) ~ 5,
+                                grepl("Leans Dem", party7) ~ 3,
                                 grepl("Independent", party7) ~ 4,
-                                grepl("Rep", party7) ~ 1,
-                                grepl("Dem", party7) ~ 7)
+                                grepl("Rep", party7) ~ 7,
+                                grepl("Dem", party7) ~ 1)
          ) %>% 
   
   # Recode black & other race to numerical.
@@ -171,13 +276,13 @@ exp2_new <- exp2 %>%
                           TRUE ~ -1)
          ) %>% 
   filter(conservative != -1) %>% 
-  mutate(republican = case_when(grepl("Not Strong Rep", partyid7) ~ 2,
-                                grepl("Not Strong Dem", partyid7) ~ 6,
-                                grepl("Leans Rep", partyid7) ~ 3,
-                                grepl("Leans Dem", partyid7) ~ 5,
+  mutate(republican = case_when(grepl("Not Strong Rep", partyid7) ~ 6,
+                                grepl("Not Strong Dem", partyid7) ~ 2,
+                                grepl("Leans Rep", partyid7) ~ 5,
+                                grepl("Leans Dem", partyid7) ~ 3,
                                 grepl("Independent", partyid7) ~ 4,
-                                grepl("Rep", partyid7) ~ 1,
-                                grepl("Dem", partyid7) ~ 7)
+                                grepl("Rep", partyid7) ~ 7,
+                                grepl("Dem", partyid7) ~ 1)
          ) %>% 
   
   # Recode black & other race to numerical.
