@@ -5,7 +5,7 @@ date: "3/29/2020"
 output:
   bookdown::pdf_document2:
     keep_tex: true
-bibliography: bib.bib
+bibliography: milestone5.bib
 biblio-style: "apalike"
 link_citations: true
 ---
@@ -15,9 +15,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # set option to write bib
 
-knitr::write_bib(c("knitr", "stringr"), "bib.bib", width = 60)
 library(gt)
 library(gtsummary)
+library(foreign)
 library(tidyverse)
 ```
 
@@ -27,9 +27,17 @@ This is my PDF document. You may also refer to the Github repo of my final proje
 
 <!-- must actually reference texts to generate bibliography -->
 
-My project replicates [Hopkins]. My other referneces are [four citations].
+My project replicates @hopkins. My other references are @R-knitr, @R-stringr, @knitr2015, and @knitr2014.
 
 ## Graphic
+
+```{r Load exp1 data, echo = FALSE}
+
+# use foreign pkg to read Stata files
+
+exp1_data <- read.dta("data/accentsexp1.dta")
+
+```
 
 ## Overview
 
