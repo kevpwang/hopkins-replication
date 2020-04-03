@@ -1,0 +1,341 @@
+---
+title: 'Milestone #6'
+author: "Kevin Wang"
+date: "4/3/2020"
+output:
+  bookdown::pdf_document2:
+    keep_tex: true
+bibliography: milestone6.bib
+biblio-style: "apalike"
+link_citations: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Removed knitr bib options line; otherwise, bib file
+# kept being overwritten with old version.
+
+library(gt)
+library(gtsummary)
+library(foreign)
+library(janitor)
+library(rstanarm)
+library(tidyverse)
+```
+
+# Introduction
+
+This is my PDF document. You may also refer to the Github repo of my final project.^[All analysis for this project can be found at https://github.com/kevpwang/replication_project.git]
+
+<!-- must actually reference texts to generate bibliography -->
+
+My project replicates @hopkins. My other references are @R-knitr, @R-stringr, @knitr2015, and @knitr2014.
+
+```{r Load data, echo = FALSE}
+
+# use foreign pkg to read Stata files
+
+exp1 <- read.dta("data/accentsexp1.dta") %>% 
+  clean_names()
+exp2 <- read.dta("data/accentsexp2.dta") %>% 
+  clean_names()
+```
+
+# Graphic
+
+```{r Recode for linear model, echo = FALSE}
+exp1_lin <- exp1 %>% 
+  
+  # Hopkins excludes Hispanics, sensible to exclude people who didn't answer Q7
+  # Recode Q7 using numerical scale.
+  
+  filter(ppethm != "Hispanic") %>% 
+  filter(q7 != "Refused") %>% 
+  mutate(q7 = recode(q7, "Strongly support" = 4,
+                     "Somewhat support" = 3,
+                     "Somewhat oppose" = 2,
+                     "Strongly oppose" = 1)
+         ) %>%
+  
+  # Derive regression variables from condition
+  
+  mutate(dark = case_when(grepl("Dark", condition) ~ 1,
+                          TRUE ~ 0),
+         accented = case_when(grepl("accented", condition) ~ 1,
+                              TRUE ~ 0),
+         video = case_when(grepl("Control", condition) ~ 0,
+                           TRUE ~ 1),
+         spanish = case_when(grepl("Spanish", condition) ~ 1,
+                             TRUE ~ 0)
+         ) %>% 
+  
+  # Data only gives educ attainment, not years. Recode into 
+  # years & make some inferences about vague cases.
+  
+  mutate(years_educ = case_when(grepl("HIGH SCHOOL GRADUATE", ppeduc) ~ 12,
+                                grepl("Some college", ppeduc) ~ 14,
+                                grepl("Professional", ppeduc) ~ 20,
+                                grepl("Bachelor", ppeduc) ~ 16,
+                                grepl("Master", ppeduc) ~ 17,
+                                grepl("12th grade", ppeduc) ~ 12,
+                                grepl("Assoc", ppeduc) ~ 14,
+                                grepl("11th", ppeduc) ~ 11,
+                                grepl("7th", ppeduc) ~ 7.5,
+                                grepl("9th", ppeduc) ~ 9,
+                                grepl("10th", ppeduc) ~ 10,
+                                grepl("No form", ppeduc) ~ 0)
+  ) %>% 
+  
+  # Recode conservative to numerical & exclude "refused".
+  # Recode republican, black, and male to numerical.
+  
+  mutate(conservative = case_when(grepl("Extremely lib", ideo7) ~ 1,
+                          grepl("Slightly lib", ideo7) ~ 3,
+                          grepl("Extremely con", ideo7) ~ 7,
+                          grepl("Slightly con", ideo7) ~ 5,
+                          grepl("Moderate", ideo7) ~ 4,
+                          grepl("Lib", ideo7) ~ 2,
+                          grepl("Con", ideo7) ~ 6,
+                          TRUE ~ -1)
+         ) %>% 
+  filter(conservative != -1) %>% 
+  mutate(republican = case_when(grepl("Not Strong Rep", party7) ~ 6,
+                                grepl("Not Strong Dem", party7) ~ 2,
+                                grepl("Leans Rep", party7) ~ 5,
+                                grepl("Leans Dem", party7) ~ 3,
+                                grepl("Independent", party7) ~ 4,
+                                grepl("Rep", party7) ~ 7,
+                                grepl("Dem", party7) ~ 1)
+         ) %>% 
+  mutate(black = case_when(grepl("Black", ppethm) ~ 1,
+                           TRUE ~ 0)
+         ) %>% 
+  mutate(male = recode(ppgender, "Male" = 1,
+                       "Female" = 0)
+         ) %>% 
+  select(q7, dark, accented, video, spanish, years_educ, conservative, republican,
+                       black, male)
+```
+
+```{r Q7 model, echo = FALSE}
+q7_model <- stan_glm(q7 ~ dark + accented + spanish + video + years_educ + conservative + republican + 
+                       black + male, data = exp1_lin, refresh = 0)
+```
+
+Original graphic from @hopkins:
+
+![](hopkins-graphic.png)
+
+Beautiful graphic:
+
+```{r Graphic, echo = FALSE}
+var_list <- c("accented", "spanish", "video")
+parameters <- tibble(condition = c("Accented English", "Fluent Spanish", "No Video (Control)"),
+       coef = map_dbl(var_list, ~pluck(coef(q7_model), .x)),
+       sd = map_dbl(var_list, ~pluck(se(q7_model), .x))
+)
+ggplot(parameters, aes(x = condition, y = coef)) +
+  geom_col(alpha = 0.5, color = "black") +
+  geom_errorbar(aes(ymin = coef - sd, ymax = coef + sd), size = 1, width = 0) +
+  geom_errorbar(aes(ymin = coef - 2 * sd, ymax = coef + 2 * sd), width = 0) +
+  scale_y_continuous(limits = c(-.4, 0.4)) +
+  labs(
+    title = "Support for Pathway to Naturalization",
+    subtitle = "Subjects who heard broken English display significantly more pro-immigrant attitudes",
+    x = "Treatment",
+    y = "Difference from Fluent English"
+    )
+```
+The gray bars depict the difference in subjects' support for a path to naturalization compared to that of subjects who saw a light-skinned immigrant fluently speaking English. Support is measured numerically from 1 (strongly oppose) to 4 (strongly support). The thick vertical lines represent the interval of one standard error, while the thin vertical lines represent the 95 percent conficence interval.
+
+# Overview
+
+@hopkins builds on prior research and sociological theory suggesting that observation of immigrants' "culturally distinctive" traits induces anti-immigrant attitudes in members of society from the dominant cultural background. Hopkins seeks to empirically determine whether immigrants who appear more "culturally distinctive" generate more hostile responses. Specifically, noting the rapid growth of Hispanic immigration to the US, Hopkins shows a nationally representative sample of non-Hispanic Americans videos, adapted from an ABC news clip, of an "undocumented Hispanic immigrant" expressing support for assimilation and a path to citizenship. The video is edited such that the immigrant is blurred, appears either visibly dark- or light-skinned, and speaks either fluent Spanish, fluent but subtly accented English, or broken English. 8 percent of the sample, the control group, were not shown any video, while the remaining 92 percent was randomly assigned to one of six possible videos (combinations of skin tone and English fluency). After the video, the sample was surveyed about their opinion on a path to citizenship for undocumented immigrants, with answers corresponding to a numerical scale of 1 ("strongly oppose") to 4 ("strongly support"). They were also surveyed on five other immigration-related questions.
+
+Hopkins runs a linear regression on attitudes toward a path to citizenship using skin tone, video language fluency, respondent years of education, conservatism, partisanship, race (white/black), and gender as explanatory variables. He also runs linear or logistic regressions between each of the other five questions and video language fluency. The principal results of the paper relate to the effect of skin tone and language. Hopkins finds that skin tone does not meaningfully shift change attitudes. Moreover, contrary to expectations that more distinctive traits would engender greater hostility, Hopkins finds no difference between exposure to fluent English or Spanish, and significantly increased support for a pathway to citizenship among those who heard broken English. Hopkins theorizes that rather than reinforce perceptions of cultural difference, a broken English speaker actually challenges stereotypes by exemplifying immigrants' desire to assimilate with American norms.
+
+# (APPENDIX) Appendix {-} 
+
+# Appendix A
+
+Original table from @hopkins:
+
+![](appendix-table.png)
+
+Replication:
+
+```{r Recode exp1, echo = FALSE}
+exp1_new <- exp1 %>% 
+  filter(ppethm != "Hispanic") %>% 
+  
+  # Since published data only gives income ranges, take lower bound as income value.
+  # Based on min/max in table, parse <$5000 as 2500 & >$175000 as 250000.
+  # Convert scale to thousands.
+  
+  separate(ppincimp, c("income", "dis1", "dis2"), " ")  %>% 
+  select(-dis1, -dis2) %>% 
+  mutate(income = recode(income, "Less" = "$2500"),
+    income = parse_number(income) / 1000) %>% 
+  
+  # Data only gives educ attainment, not years. Recode into 
+  # years & make some inferences about vague cases. Remember
+  # to go broad -> narrow w/case_when().
+  
+  mutate(years_educ = case_when(grepl("HIGH SCHOOL GRADUATE", ppeduc) ~ 12,
+                                grepl("Some college", ppeduc) ~ 14,
+                                grepl("Professional", ppeduc) ~ 20,
+                                grepl("Bachelor", ppeduc) ~ 16,
+                                grepl("Master", ppeduc) ~ 17,
+                                grepl("12th grade", ppeduc) ~ 12,
+                                grepl("Assoc", ppeduc) ~ 14,
+                                grepl("11th", ppeduc) ~ 11,
+                                grepl("7th", ppeduc) ~ 7.5,
+                                grepl("9th", ppeduc) ~ 9,
+                                grepl("10th", ppeduc) ~ 10,
+                                grepl("No form", ppeduc) ~ 0)
+  ) %>% 
+  
+  # Recode ppnet & ppwork to numerical.
+  # Recode ideo7 & repub to numerical scale.
+  
+  mutate(online = recode(ppnet, "Yes" = 1,
+                         "No" = 0)) %>% 
+  mutate(employed = case_when(grepl("Not working", ppwork) ~ 0,
+                              TRUE ~ 1)) %>% 
+  mutate(conservative = case_when(grepl("Extremely lib", ideo7) ~ 1,
+                          grepl("Slightly lib", ideo7) ~ 3,
+                          grepl("Extremely con", ideo7) ~ 7,
+                          grepl("Slightly con", ideo7) ~ 5,
+                          grepl("Moderate", ideo7) ~ 4,
+                          grepl("Lib", ideo7) ~ 2,
+                          grepl("Con", ideo7) ~ 6,
+                          TRUE ~ -1)
+         ) %>% 
+  filter(conservative != -1) %>% 
+  mutate(republican = case_when(grepl("Not Strong Rep", party7) ~ 6,
+                                grepl("Not Strong Dem", party7) ~ 2,
+                                grepl("Leans Rep", party7) ~ 5,
+                                grepl("Leans Dem", party7) ~ 3,
+                                grepl("Independent", party7) ~ 4,
+                                grepl("Rep", party7) ~ 7,
+                                grepl("Dem", party7) ~ 1)
+         ) %>% 
+  
+  # Recode black & other race to numerical.
+  
+  mutate(black = case_when(grepl("Black", ppethm) ~ 1,
+                           TRUE ~ 0)
+         ) %>% 
+  mutate(other = case_when(grepl("Other", ppethm) ~ 1,
+                           TRUE ~ 0)
+         ) %>% 
+  select(income, years_educ, online, employed, conservative,
+         republican, black, other, ppage)
+```
+
+```{r Recode exp2, echo = FALSE}
+# Repeat same recodings for 2nd survey data.
+
+exp2_new <- exp2 %>% 
+  filter(ppethm != "Hispanic") %>% 
+  
+  # Drop NAs for partyid & ideo, as original table does.
+  
+  drop_na(partyid7, ideology) %>% 
+  separate(ppincimp, c("income", "dis1", "dis2"), " ")  %>% 
+  select(-dis1, -dis2) %>% 
+  mutate(income = recode(income, "Less" = "$2500"),
+    income = parse_number(income) / 1000) %>% 
+  mutate(years_educ = case_when(grepl("HIGH SCHOOL GRADUATE", ppeduc) ~ 12,
+                                grepl("Some college", ppeduc) ~ 14,
+                                grepl("Professional", ppeduc) ~ 20,
+                                grepl("Bachelor", ppeduc) ~ 16,
+                                grepl("Master", ppeduc) ~ 17,
+                                grepl("12th grade", ppeduc) ~ 12,
+                                grepl("Assoc", ppeduc) ~ 14,
+                                grepl("11th", ppeduc) ~ 11,
+                                grepl("7th", ppeduc) ~ 7.5,
+                                grepl("9th", ppeduc) ~ 9,
+                                grepl("10th", ppeduc) ~ 10,
+                                grepl("No form", ppeduc) ~ 0,
+                                grepl("5th", ppeduc) ~ 5.5)
+  ) %>%
+  mutate(online = recode(ppnet, "Yes" = 1,
+                         "No" = 0)) %>% 
+  mutate(employed = case_when(grepl("Not working", ppwork) ~ 0,
+                              TRUE ~ 1)) %>% 
+  mutate(conservative = case_when(grepl("Extremely lib", ideology) ~ 1,
+                          grepl("Slightly lib", ideology) ~ 3,
+                          grepl("Extremely con", ideology) ~ 7,
+                          grepl("Slightly con", ideology) ~ 5,
+                          grepl("Moderate", ideology) ~ 4,
+                          grepl("Lib", ideology) ~ 2,
+                          grepl("Con", ideology) ~ 6,
+                          TRUE ~ -1)
+         ) %>% 
+  filter(conservative != -1) %>% 
+  mutate(republican = case_when(grepl("Not Strong Rep", partyid7) ~ 6,
+                                grepl("Not Strong Dem", partyid7) ~ 2,
+                                grepl("Leans Rep", partyid7) ~ 5,
+                                grepl("Leans Dem", partyid7) ~ 3,
+                                grepl("Independent", partyid7) ~ 4,
+                                grepl("Rep", partyid7) ~ 7,
+                                grepl("Dem", partyid7) ~ 1)
+         ) %>% 
+  
+  # Recode black & other race to numerical.
+  
+  mutate(black = case_when(grepl("Black", ppethm) ~ 1,
+                           TRUE ~ 0)
+         ) %>% 
+  mutate(other = case_when(grepl("Other", ppethm) ~ 1,
+                           TRUE ~ 0)
+         ) %>% 
+  select(income, years_educ, online, employed, conservative,
+         republican, black, other, ppage)
+```
+
+```{r Make table, echo = FALSE}
+table <- tibble(labels = c("Income", "Years of Education", "Online", "Employed",
+                           "Conservative", "Republica", "Black", "Other", "Age"),
+                mean1 = colMeans(exp1_new),
+                sd1 = apply(exp1_new, 2, sd),
+                min1 = apply(exp1_new, 2, min),
+                max1 = apply(exp1_new, 2, max),
+                mean2 = colMeans(exp2_new),
+                sd2 = apply(exp2_new, 2, sd),
+                min2 = apply(exp2_new, 2, min),
+                max2 = apply(exp2_new, 2, max)
+                )
+table %>% 
+  gt() %>% 
+  tab_spanner(
+    label = "August 2010 Experiment",
+    columns = vars(mean1, sd1, min1, max1)
+  ) %>% 
+  tab_spanner(
+    label = "January 2011 Experiment",
+    columns = vars(mean2, sd2, min2, max2)
+  ) %>% 
+  fmt_number(
+    decimals = 2,
+    columns = vars(mean1, sd1, min1, max1, 
+                   mean2, sd2, min2, max2)
+  ) %>% 
+  cols_label(
+    labels = "",
+    mean1 = "Mean",
+    sd1 = "SD",
+    min1 = "Min.",
+    max1 = "Max.",
+    mean2 = "Mean",
+    sd2 = "SD",
+    min2 = "Min.",
+    max2 = "Max.",
+  )
+```
+
+The most significant differences between @hopkins and my replication are income and education. For income, the published data only gives ranges, not exact values. I decided to recode using the floor of each range (e.g. "5000 to 7499" becomes 5000) in order to get an accurate minimum value; this predictably results in my mean value being lower than @hopkins. Similarly, in many cases, the data only gives educational attainment (e.g. "some college", "professional/graduate") and not exact years, so I had to make some assumptions while recoding (e.g. coding "professional/graduate" as 20 years by default). Once again, this predictably results in differences between my values and @hopkins, though less significantly so than for income.
+
+# References
