@@ -125,7 +125,7 @@ q7_model <- stan_glm(q7 ~ dark + accented + spanish + video + years_educ + conse
 
 Original graphic from @hopkins:
 
-![](hopkins-graphic.png)
+![](images/hopkins-fig-2.png)
 
 Beautiful graphic:
 
@@ -161,7 +161,7 @@ Hopkins runs a linear regression on attitudes toward a path to citizenship using
 
 Original table from @hopkins:
 
-![](appendix-table.png)
+![](images/hopkins-app-c-tab-1.png)
 
 Replication:
 
