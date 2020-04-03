@@ -7,3 +7,4 @@
 *.log
 *.tex
 *_files
+.DS_Store

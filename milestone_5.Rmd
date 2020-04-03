@@ -36,9 +36,9 @@ My project replicates @hopkins. My other references are @R-knitr, @R-stringr, @k
 
 # use foreign pkg to read Stata files
 
-exp1 <- read.dta("data/accentsexp1.dta") %>% 
+exp1 <- read.dta("raw-data/accentsexp1.dta") %>% 
   clean_names()
-exp2 <- read.dta("data/accentsexp2.dta") %>% 
+exp2 <- read.dta("raw-data/accentsexp2.dta") %>% 
   clean_names()
 ```
 
