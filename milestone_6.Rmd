@@ -46,19 +46,19 @@ Hopkins runs a linear regression on attitudes toward a path to citizenship using
 ## Beautiful Graphic
 
 ```{r Linear Q7 model, echo = FALSE}
+
+# Regression analysis for Q7: path to citizenship 
+
 exp1_q7 <- exp1_cleaned %>% 
   
   # Hopkins excludes Hispanics; sensible to exclude people who refused to answer Q7
-  # Recode Q7 using numerical scale.
   
   filter(ppethm != "Hispanic") %>% 
-  filter(q7 != 0)
+  filter(q7 != -1)
 
 q7_model <- stan_glm(q7 ~ dark + accented + spanish + video + years_educ + conservative + republican + 
-                       black + male, data = exp1_lin, refresh = 0)
+                       black + male, data = exp1_q7, refresh = 0)
 ```
-
-Beautiful graphic:
 
 ```{r Replicate Figure 2, echo = FALSE}
 var_list <- c("accented", "spanish", "video")
@@ -83,11 +83,11 @@ The gray bars depict the difference in subjects' support for a path to naturaliz
 
 ## Appendix
 
-Table 1 from @hopkins:
+#### Table 1 from @hopkins:
 
 ![](images/hopkins-tab-1.png)
 
-Replication:
+#### Replication:
 
 ```{r Replicate Table 1, echo = FALSE}
 tab_model(q7_model,
@@ -103,37 +103,78 @@ tab_model(q7_model,
                         "Black", "Male"))
 ```
 
-Figure 2 from @hopkins:
+#### Figure 2 from @hopkins:
 
 ![](images/hopkins-fig-2.png)
 
-Replication:
+#### Replication:
 
 See under heading "Beautiful Graphic".
 
-Figure 3 from @hopkins:
+#### Figure 3 from @hopkins:
 
 ![](images/hopkins-fig-3.png)
 
-Replication:
+#### Replication:
 
-Figure 4 from @hopkins:
+```{r Replicate Figure 3, echo = FALSE}
+q7_model <- stan_glm(q7 ~ dark + accented + spanish + video + years_educ + conservative + republican + 
+                       black + male, data = exp1_q7, refresh = 0)
+
+exp1_q8 <- exp1_cleaned %>% 
+  filter(ppethm != "Hispanic") %>% 
+  filter(q8 != -1)
+
+q8_model <- stan_glm(q8 ~ dark + accented + spanish + video + years_educ + conservative + republican + 
+                       black + male, data = exp1_q8, refresh = 0)
+
+exp1_q9 <- exp1_cleaned %>% 
+  filter(ppethm != "Hispanic") %>% 
+  filter(q9 != -1)
+
+q9_model <- stan_glm(q9 ~ accented + english + spanish + dark + years_educ + conservative + republican + 
+                       black + male, data = exp1_q9, refresh = 0)
+
+exp1_q10 <- exp1_cleaned %>% 
+  filter(ppethm != "Hispanic") %>% 
+  filter(q10 != -1)
+
+q10_model <- stan_glm(q10 ~ accented + english + spanish + dark + years_educ + conservative + republican + 
+                       black + male, data = exp1_q10, refresh = 0)
+
+exp1_q12a <- exp1_cleaned %>% 
+  filter(ppethm != "Hispanic") %>% 
+  drop_na(q12a) %>% 
+  filter(q12a != -1)
+
+q12a_model <- stan_glm(q12a ~ accented + english + spanish + dark + years_educ + conservative + republican + 
+                       black + male, family = "binomial", data = exp1_q12a, refresh = 0)
+
+exp1_q13 <- exp1_cleaned %>% 
+  filter(ppethm != "Hispanic") %>% 
+  filter(q13 != -1)
+
+q13_model <- stan_glm(q13 ~ accented + english + spanish + dark + years_educ + conservative + republican + 
+                       black + male, data = exp1_q13, refresh = 0)
+```
+
+#### Figure 4 from @hopkins:
 
 ![](images/hopkins-fig-4.png)
 
-Replication:
+#### Replication:
 
-Appendix A, Figure 1 from @hopkins:
+#### Appendix A, Figure 1 from @hopkins:
 
 ![](images/hopkins-app-a-fig-1.png)
 
-Replication:
+#### Replication:
 
-Appendix C, Table 1 from @hopkins:
+#### Appendix C, Table 1 from @hopkins:
 
 ![](images/hopkins-app-c-tab-1.png)
 
-Replication:
+#### Replication:
 
 ```{r Replicate App C Table 1, echo = FALSE}
 exp1_tab1 <- exp1_cleaned %>% 
@@ -189,22 +230,98 @@ table %>%
 
 The most significant differences between @hopkins and my replication are income and education. For income, the published data only gives ranges, not exact values. I decided to recode using the floor of each range (e.g. "5000 to 7499" becomes 5000) in order to get an accurate minimum value; this predictably results in my mean value being lower than @hopkins. Similarly, in many cases, the data only gives educational attainment (e.g. "some college", "professional/graduate") and not exact years, so I had to make some assumptions while recoding (e.g. coding "professional/graduate" as 20 years by default). Once again, this predictably results in differences between my values and @hopkins, though less significantly so than for income.
 
-Appendix C, Table 2 from @hopkins:
+#### Appendix C, Table 2 from @hopkins:
 
 ![](images/hopkins-app-c-tab-2.png)
 
-Replication:
+#### Replication:
 
-Appendix C, Table 3 from @hopkins:
+```{r Replicate App C Table 2, echo = FALSE}
+
+# Regression analyses for Q7, Q8: legal immigration, & Q9: generic threat.
+# Exclude refusals to answer.
+
+q7_model <- stan_glm(q7 ~ accented + english + spanish + dark + years_educ + conservative + republican + 
+                       black + male, data = exp1_q7, refresh = 0)
+
+exp1_q8 <- exp1_cleaned %>% 
+  filter(ppethm != "Hispanic") %>% 
+  filter(q8 != -1)
+
+q8_model <- stan_glm(q8 ~ accented + english + spanish + dark + years_educ + conservative + republican + 
+                       black + male, data = exp1_q8, refresh = 0)
+
+exp1_q9 <- exp1_cleaned %>% 
+  filter(ppethm != "Hispanic") %>% 
+  filter(q9 != -1)
+
+q9_model <- stan_glm(q9 ~ accented + english + spanish + dark + years_educ + conservative + republican + 
+                       black + male, data = exp1_q9, refresh = 0)
+
+tab_model(q7_model, q8_model, q9_model,
+          show.se = TRUE,
+          show.ci = FALSE,
+          show.r2 = FALSE,
+          digits = 3,
+          dv.labels = c("Pathway", "Legal Immig.", "Generic Threat"),
+          pred.labels = c("Intercept", "Accented", "English", "Spanish", "Dark Skin",
+                        "Education", "Conservative Ideo.", "Republican ID",
+                        "Black", "Male"))
+```
+
+#### Appendix C, Table 3 from @hopkins:
 
 ![](images/hopkins-app-c-tab-3.png)
 
-Replication:
+#### Replication:
 
-Appendix C, Table 4 from @hopkins:
+```{r Replicate App C Table 3, echo = FALSE}
+
+# Regression analyses for Q10: strengthens America, Q12a: social trust, & Q13: job threat.
+# Exclude refusals to answer.
+
+exp1_q10 <- exp1_cleaned %>% 
+  filter(ppethm != "Hispanic") %>% 
+  filter(q10 != -1)
+
+q10_model <- stan_glm(q10 ~ accented + english + spanish + dark + years_educ + conservative + republican + 
+                       black + male, data = exp1_q10, refresh = 0)
+
+exp1_q12a <- exp1_cleaned %>% 
+  filter(ppethm != "Hispanic") %>% 
+  drop_na(q12a) %>% 
+  filter(q12a != -1)
+
+q12a_model <- stan_glm(q12a ~ accented + english + spanish + dark + years_educ + conservative + republican + 
+                       black + male, family = "binomial", data = exp1_q12a, refresh = 0)
+
+exp1_q13 <- exp1_cleaned %>% 
+  filter(ppethm != "Hispanic") %>% 
+  filter(q13 != -1)
+
+q13_model <- stan_glm(q13 ~ accented + english + spanish + dark + years_educ + conservative + republican + 
+                       black + male, data = exp1_q13, refresh = 0)
+
+tab_model(q10_model, q12a_model, q13_model,
+          show.se = TRUE,
+          show.ci = FALSE,
+          show.r2 = FALSE,
+          transform = NULL,
+          digits = 3,
+          dv.labels = c("Strengthen America", "Social Trust", "Job Threat"),
+          pred.labels = c("Intercept", "Accented", "English", "Spanish", "Dark Skin",
+                        "Education", "Conservative Ideo.", "Republican ID",
+                        "Black", "Male"))
+```
+
+#### Appendix C, Table 4 from @hopkins:
 
 ![](images/hopkins-app-c-tab-4.png)
 
-Replication:
+#### Replication:
 
-# References
+```{r Replicate App C Table 4, echo = FALSE}
+
+```
+
+## References
