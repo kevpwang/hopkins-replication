@@ -25,7 +25,6 @@ exp1_cleaned <- exp1 %>%
                      "Strongly oppose" = 1,
                      "Refused" = -1)
          ) %>%
-  
   mutate(q8 = recode(q8, "Increased a lot" = 5,
                      "Increased a little" = 4,
                      "Left the same" = 3,
@@ -80,8 +79,8 @@ exp1_cleaned <- exp1 %>%
                           TRUE ~ 0),
          accented = case_when(grepl("accented", condition) ~ 1,
                               TRUE ~ 0),
-         video = case_when(grepl("Control", condition) ~ 0,
-                           TRUE ~ 1),
+         no_video = case_when(grepl("Control", condition) ~ 1,
+                           TRUE ~ 0),
          spanish = case_when(grepl("Spanish", condition) ~ 1,
                              TRUE ~ 0),
          english = case_when(grepl("clear English", condition) ~ 1,
@@ -122,7 +121,7 @@ exp1_cleaned <- exp1 %>%
                            TRUE ~ 0)) %>% 
   mutate(male = recode(ppgender, "Male" = 1,
                        "Female" = 0)) %>% 
-  select(q7, q8, q9, q10, q12a, q13, dark, accented, video, spanish, english, income, years_educ, online, employed, conservative,
+  select(q7, q8, q9, q10, q12a, q13, dark, accented, no_video, spanish, english, income, years_educ, online, employed, conservative,
          republican, black, other, male, ppage, ppethm)
 
 write_rds(exp1_cleaned, "clean-data/exp1_cleaned.rds")

@@ -16,6 +16,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(gt)
 library(sjPlot)
+library(ggpubr)
 library(janitor)
 library(rstanarm)
 library(tidyverse)
@@ -56,23 +57,23 @@ exp1_q7 <- exp1_cleaned %>%
   filter(ppethm != "Hispanic") %>% 
   filter(q7 != -1)
 
-q7_model <- stan_glm(q7 ~ dark + accented + spanish + video + years_educ + conservative + republican + 
+q7_model <- stan_glm(q7 ~ dark + accented + spanish + no_video + years_educ + conservative + republican + 
                        black + male, data = exp1_q7, refresh = 0)
 ```
 
 ```{r Replicate Figure 2, echo = FALSE}
-var_list <- c("accented", "spanish", "video")
+iv_list <- c("accented", "spanish", "no_video")
 parameters <- tibble(condition = c("Accented English", "Fluent Spanish", "No Video (Control)"),
-       coef = map_dbl(var_list, ~pluck(coef(q7_model), .x)),
-       sd = map_dbl(var_list, ~pluck(se(q7_model), .x))
+       coef = map_dbl(iv_list, ~pluck(coef(q7_model), .x)),
+       sd = map_dbl(iv_list, ~pluck(se(q7_model), .x))
 )
 ggplot(parameters, aes(x = condition, y = coef)) +
   geom_col(alpha = 0.5, color = "black") +
   geom_errorbar(aes(ymin = coef - sd, ymax = coef + sd), size = 1, width = 0) +
   geom_errorbar(aes(ymin = coef - 2 * sd, ymax = coef + 2 * sd), width = 0) +
-  scale_y_continuous(limits = c(-.4, 0.4)) +
+  scale_y_continuous(limits = c(-0.4, 0.4)) +
   labs(
-    title = "Support for Pathway to Naturalization",
+    title = "Support Pathway to Naturalization",
     subtitle = "Subjects who heard broken English display significantly more pro-immigrant attitudes",
     x = "Treatment",
     y = "Difference from Fluent English"
@@ -117,29 +118,33 @@ See under heading "Beautiful Graphic".
 
 #### Replication:
 
-```{r Replicate Figure 3, echo = FALSE}
-q7_model <- stan_glm(q7 ~ dark + accented + spanish + video + years_educ + conservative + republican + 
+```{r All models, echo = FALSE, cache = TRUE}
+
+# Create models for all six questions
+# q12a: social trust is logistic
+
+q7_model <- stan_glm(q7 ~ dark + accented + spanish + no_video + years_educ + conservative + republican + 
                        black + male, data = exp1_q7, refresh = 0)
 
 exp1_q8 <- exp1_cleaned %>% 
   filter(ppethm != "Hispanic") %>% 
   filter(q8 != -1)
 
-q8_model <- stan_glm(q8 ~ dark + accented + spanish + video + years_educ + conservative + republican + 
+q8_model <- stan_glm(q8 ~ dark + accented + spanish + no_video + years_educ + conservative + republican + 
                        black + male, data = exp1_q8, refresh = 0)
 
 exp1_q9 <- exp1_cleaned %>% 
   filter(ppethm != "Hispanic") %>% 
   filter(q9 != -1)
 
-q9_model <- stan_glm(q9 ~ accented + english + spanish + dark + years_educ + conservative + republican + 
+q9_model <- stan_glm(q9 ~ dark + accented + spanish + no_video + years_educ + conservative + republican + 
                        black + male, data = exp1_q9, refresh = 0)
 
 exp1_q10 <- exp1_cleaned %>% 
   filter(ppethm != "Hispanic") %>% 
   filter(q10 != -1)
 
-q10_model <- stan_glm(q10 ~ accented + english + spanish + dark + years_educ + conservative + republican + 
+q10_model <- stan_glm(q10 ~ dark + accented + spanish + no_video + years_educ + conservative + republican + 
                        black + male, data = exp1_q10, refresh = 0)
 
 exp1_q12a <- exp1_cleaned %>% 
@@ -147,15 +152,125 @@ exp1_q12a <- exp1_cleaned %>%
   drop_na(q12a) %>% 
   filter(q12a != -1)
 
-q12a_model <- stan_glm(q12a ~ accented + english + spanish + dark + years_educ + conservative + republican + 
-                       black + male, family = "binomial", data = exp1_q12a, refresh = 0)
+# Supposedly logistic, but for some reason the plot is of a linear analysis.
+
+q12a_model <- stan_glm(q12a ~ dark + accented + spanish + no_video + years_educ + conservative + republican + 
+                       black + male, data = exp1_q12a, refresh = 0)
 
 exp1_q13 <- exp1_cleaned %>% 
   filter(ppethm != "Hispanic") %>% 
   filter(q13 != -1)
 
-q13_model <- stan_glm(q13 ~ accented + english + spanish + dark + years_educ + conservative + republican + 
+q13_model <- stan_glm(q13 ~ dark + accented + spanish + no_video + years_educ + conservative + republican + 
                        black + male, data = exp1_q13, refresh = 0)
+```
+
+```{r Replicate Figure 3, echo = FALSE}
+iv_list <- c("accented", "spanish", "no_video", "dark")
+parameters <- tibble(condition = c("Accent", "Span.", "No Video", "Dark"),
+       coef = map_dbl(iv_list, ~pluck(coef(q7_model), .x)),
+       sd = map_dbl(iv_list, ~pluck(se(q7_model), .x))
+       ) %>%
+  mutate(condition = factor(condition, levels = condition))
+
+q7_plot <- ggplot(parameters, aes(x = condition, y = coef)) +
+  geom_col(alpha = 0.5, color = "black") +
+  geom_errorbar(aes(ymin = coef - sd, ymax = coef + sd), size = 1, width = 0) +
+  geom_errorbar(aes(ymin = coef - 2 * sd, ymax = coef + 2 * sd), width = 0) +
+  scale_y_continuous(limits = c(-0.4, 0.4)) +
+  labs(
+    title = "Support Pathway to Naturalization",
+    x = "Treatment",
+    y = "Difference from LS Fluent English"
+    )
+
+parameters <- tibble(condition = c("Accent", "Span.", "No Video", "Dark"),
+       coef = map_dbl(iv_list, ~pluck(coef(q8_model), .x)),
+       sd = map_dbl(iv_list, ~pluck(se(q8_model), .x))
+       ) %>% 
+  mutate(condition = factor(condition, levels = condition))
+
+q8_plot <- ggplot(parameters, aes(x = condition, y = coef)) +
+  geom_col(alpha = 0.5, color = "black") +
+  geom_errorbar(aes(ymin = coef - sd, ymax = coef + sd), size = 1, width = 0) +
+  geom_errorbar(aes(ymin = coef - 2 * sd, ymax = coef + 2 * sd), width = 0) +
+  scale_y_continuous(limits = c(-0.4, 0.4)) +
+  labs(
+    title = "Support Increased Immigration",
+    x = "Treatment",
+    y = "Difference from LS Fluent English"
+    )
+
+parameters <- tibble(condition = c("Accent", "Span.", "No Video", "Dark"),
+       coef = map_dbl(iv_list, ~pluck(coef(q9_model), .x)),
+       sd = map_dbl(iv_list, ~pluck(se(q9_model), .x))
+       ) %>% 
+  mutate(condition = factor(condition, levels = condition))
+
+q9_plot <- ggplot(parameters, aes(x = condition, y = coef)) +
+  geom_col(alpha = 0.5, color = "black") +
+  geom_errorbar(aes(ymin = coef - sd, ymax = coef + sd), size = 1, width = 0) +
+  geom_errorbar(aes(ymin = coef - 2 * sd, ymax = coef + 2 * sd), width = 0) +
+  scale_y_continuous(limits = c(-0.4, 0.3), breaks = c(-0.4, -0.2, 0.1, 0.2, 0.3)) +
+  labs(
+    title = "Don't Feel Threatened",
+    x = "Treatment",
+    y = "Difference from LS Fluent English"
+    )
+
+parameters <- tibble(condition = c("Accent", "Span.", "No Video", "Dark"),
+       coef = map_dbl(iv_list, ~pluck(coef(q10_model), .x)),
+       sd = map_dbl(iv_list, ~pluck(se(q10_model), .x))
+       ) %>% 
+  mutate(condition = factor(condition, levels = condition))
+
+q10_plot <- ggplot(parameters, aes(x = condition, y = coef)) +
+  geom_col(alpha = 0.5, color = "black") +
+  geom_errorbar(aes(ymin = coef - sd, ymax = coef + sd), size = 1, width = 0) +
+  geom_errorbar(aes(ymin = coef - 2 * sd, ymax = coef + 2 * sd), width = 0) +
+  scale_y_continuous(limits = c(-0.3, 0.3), breaks = c(-0.3, -0.1, 0.1, 0.3)) +
+  labs(
+    title = "Strengthen American Society",
+    x = "Treatment",
+    y = "Difference from LS Fluent English"
+    )
+
+parameters <- tibble(condition = c("Accent", "Span.", "No Video", "Dark"),
+       coef = map_dbl(iv_list, ~pluck(coef(q12a_model), .x)),
+       sd = map_dbl(iv_list, ~pluck(se(q12a_model), .x))
+       ) %>% 
+  mutate(condition = factor(condition, levels = condition))
+
+q12a_plot <- ggplot(parameters, aes(x = condition, y = coef)) +
+  geom_col(alpha = 0.5, color = "black") +
+  geom_errorbar(aes(ymin = coef - sd, ymax = coef + sd), size = 1, width = 0) +
+  geom_errorbar(aes(ymin = coef - 2 * sd, ymax = coef + 2 * sd), width = 0) +
+  scale_y_continuous(limits = c(-0.3, 0.3), breaks = c(-0.3, -0.1, 0.1, 0.3)) +
+  labs(
+    title = "Social Trust",
+    x = "Treatment",
+    y = "Difference from LS Fluent English"
+    )
+
+parameters <- tibble(condition = c("Accent", "Span.", "No Video", "Dark"),
+       coef = map_dbl(iv_list, ~pluck(coef(q13_model), .x)),
+       sd = map_dbl(iv_list, ~pluck(se(q13_model), .x))
+       ) %>% 
+  mutate(condition = factor(condition, levels = condition))
+
+q13_plot <- ggplot(parameters, aes(x = condition, y = coef)) +
+  geom_col(alpha = 0.5, color = "black") +
+  geom_errorbar(aes(ymin = coef - sd, ymax = coef + sd), size = 1, width = 0) +
+  geom_errorbar(aes(ymin = coef - 2 * sd, ymax = coef + 2 * sd), width = 0) +
+  scale_y_continuous(limits = c(-0.3, 0.3), breaks = c(-0.3, -0.1, 0.1, 0.3)) +
+  labs(
+    title = "Don't Take Jobs",
+    x = "Treatment",
+    y = "Difference from LS Fluent English"
+    )
+
+ggarrange(q7_plot, q12a_plot, q9_plot, q10_plot, q13_plot, q8_plot,
+                   ncol = 3, nrow = 2)
 ```
 
 #### Figure 4 from @hopkins:
@@ -238,22 +353,15 @@ The most significant differences between @hopkins and my replication are income 
 
 ```{r Replicate App C Table 2, echo = FALSE}
 
-# Regression analyses for Q7, Q8: legal immigration, & Q9: generic threat.
+# Regression analyses for Q7, Q8: legal immigration, & Q9: generic threat 
+# using variables in Appendix C table.
 # Exclude refusals to answer.
 
 q7_model <- stan_glm(q7 ~ accented + english + spanish + dark + years_educ + conservative + republican + 
                        black + male, data = exp1_q7, refresh = 0)
 
-exp1_q8 <- exp1_cleaned %>% 
-  filter(ppethm != "Hispanic") %>% 
-  filter(q8 != -1)
-
 q8_model <- stan_glm(q8 ~ accented + english + spanish + dark + years_educ + conservative + republican + 
                        black + male, data = exp1_q8, refresh = 0)
-
-exp1_q9 <- exp1_cleaned %>% 
-  filter(ppethm != "Hispanic") %>% 
-  filter(q9 != -1)
 
 q9_model <- stan_glm(q9 ~ accented + english + spanish + dark + years_educ + conservative + republican + 
                        black + male, data = exp1_q9, refresh = 0)
@@ -280,27 +388,16 @@ tab_model(q7_model, q8_model, q9_model,
 # Regression analyses for Q10: strengthens America, Q12a: social trust, & Q13: job threat.
 # Exclude refusals to answer.
 
-exp1_q10 <- exp1_cleaned %>% 
-  filter(ppethm != "Hispanic") %>% 
-  filter(q10 != -1)
-
 q10_model <- stan_glm(q10 ~ accented + english + spanish + dark + years_educ + conservative + republican + 
                        black + male, data = exp1_q10, refresh = 0)
-
-exp1_q12a <- exp1_cleaned %>% 
-  filter(ppethm != "Hispanic") %>% 
-  drop_na(q12a) %>% 
-  filter(q12a != -1)
 
 q12a_model <- stan_glm(q12a ~ accented + english + spanish + dark + years_educ + conservative + republican + 
                        black + male, family = "binomial", data = exp1_q12a, refresh = 0)
 
-exp1_q13 <- exp1_cleaned %>% 
-  filter(ppethm != "Hispanic") %>% 
-  filter(q13 != -1)
-
 q13_model <- stan_glm(q13 ~ accented + english + spanish + dark + years_educ + conservative + republican + 
                        black + male, data = exp1_q13, refresh = 0)
+
+# transform = NULL to preserve q12a_model parameters on logistic scale.
 
 tab_model(q10_model, q12a_model, q13_model,
           show.se = TRUE,
