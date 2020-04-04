@@ -110,7 +110,7 @@ exp1_cleaned <- exp1 %>%
                                 grepl("Leans Dem", party7) ~ 3,
                                 grepl("Independent", party7) ~ 4,
                                 grepl("Rep", party7) ~ 7,
-                                grepl("Dem", party7) ~ 1)
+                                grepl("Dem", party7) ~ 1),
          ) %>% 
   
   # Recode black, other race, & male to numerical.

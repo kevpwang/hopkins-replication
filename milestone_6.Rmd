@@ -36,7 +36,7 @@ This is my PDF document. You may also refer to the Github repo of my final proje
 
 <!-- must actually reference texts to generate bibliography -->
 
-My project replicates @hopkins. My other references are @R-knitr, @R-stringr, @knitr2015, and @knitr2014.
+My final project is based on @king and replicates @hopkins. My other references are @knitr2015, and @knitr2014.
 
 ## Overview
 
@@ -82,6 +82,16 @@ ggplot(parameters, aes(x = condition, y = coef)) +
 
 The gray bars depict the difference in subjects' support for a path to naturalization compared to that of subjects who saw a light-skinned immigrant fluently speaking English. Support is measured numerically from 1 (strongly oppose) to 4 (strongly support). The thick vertical lines represent the interval of one standard error, while the thin vertical lines represent the 95 percent conficence interval.
 
+## Replication Progress
+
+I was able to replicate all but three charts and tables from @hopkins. I am not able to replicate Appendix A, Figure 1 because it is not entirely clear where that data is in the dataset and how to process it, but I anticipate coming up with a method soon. I can only partially replicate Figure 4 and Appendix C, Table 4 because the method for calculating the six-question index is not specified anywhere in the paper; I may have to email Hopkins and ask. The only additional aspect I am unable to replicate is the "free step-down resampling method" for generating the appropriate corrected p-values for Figure 3.
+
+## Proposed Extension
+
+In both the August 2010 and January 2011 surveys, all respondents are asked the following question: "In your day-to-day life, how frequently do you hear Spanish spoken? Never or almost never, less than once a month, 1-3 times each month, at least once a week, or every day?" @hopkins does not include responses to this question in its analysis of effects on attitude changes.
+
+A promising extension of @hopkins would be to examine differences in attitude changes grouped by the frequency at which respondents hear Spanish spoken. Based on a cursory glance of the responses to this question in the August 2010 survey, a significant plurality of respondents, 42 percent, report hearing Spanish spoken every day, while another 28 percent report hearing Spanish spoken at least once a week. The apparent lack of exclusionary responses may be influenced by such widespread familiarity with Spanish among respondents, whereas other respondents less familiar with Spanish in their daily lives may exhibit exclusionary responses for which the current analysis is not accounting. This idea has foundations in other research. For example, @enos finds that when culturally distinctive Spanish speakers are introduced to a predominantly white, upper-income subway commute route, overall attitudes toward immigration become more hostile. It could similarly be the case in @hopkins that the only reason why fluent Spanish and broken English treatments do not prompt overall hostile responses is because the vast majority of respondents are already familiar with Spanish. It is worthwhile, therefore, to disaggregate attitude changes on the basis of the Spanish familiarity question, and examine whether positive or negative responses might be concentrated among particular groups.
+
 ## Appendix
 
 #### Table 1 from @hopkins:
@@ -120,8 +130,7 @@ See under heading "Beautiful Graphic".
 
 ```{r All models, echo = FALSE, cache = TRUE}
 
-# Create models for all six questions
-# q12a: social trust is logistic
+# Create models for all six questions.
 
 q7_model <- stan_glm(q7 ~ dark + accented + spanish + no_video + years_educ + conservative + republican + 
                        black + male, data = exp1_q7, refresh = 0)
@@ -166,6 +175,11 @@ q13_model <- stan_glm(q13 ~ dark + accented + spanish + no_video + years_educ + 
 ```
 
 ```{r Replicate Figure 3, echo = FALSE}
+
+# map() does not work here & nesting map() is probably not worth the
+# trouble, especially since I'm not sure how to facet_wrap() geom_col()
+# & give each graph its own separate title.
+
 iv_list <- c("accented", "spanish", "no_video", "dark")
 parameters <- tibble(condition = c("Accent", "Span.", "No Video", "Dark"),
        coef = map_dbl(iv_list, ~pluck(coef(q7_model), .x)),
@@ -179,10 +193,11 @@ q7_plot <- ggplot(parameters, aes(x = condition, y = coef)) +
   geom_errorbar(aes(ymin = coef - 2 * sd, ymax = coef + 2 * sd), width = 0) +
   scale_y_continuous(limits = c(-0.4, 0.4)) +
   labs(
-    title = "Support Pathway to Naturalization",
+    title = "Support Pathway",
     x = "Treatment",
     y = "Difference from LS Fluent English"
-    )
+    ) +
+  theme(plot.title = element_text(size = 9))
 
 parameters <- tibble(condition = c("Accent", "Span.", "No Video", "Dark"),
        coef = map_dbl(iv_list, ~pluck(coef(q8_model), .x)),
@@ -199,7 +214,8 @@ q8_plot <- ggplot(parameters, aes(x = condition, y = coef)) +
     title = "Support Increased Immigration",
     x = "Treatment",
     y = "Difference from LS Fluent English"
-    )
+    ) +
+  theme(plot.title = element_text(size = 9))
 
 parameters <- tibble(condition = c("Accent", "Span.", "No Video", "Dark"),
        coef = map_dbl(iv_list, ~pluck(coef(q9_model), .x)),
@@ -216,7 +232,8 @@ q9_plot <- ggplot(parameters, aes(x = condition, y = coef)) +
     title = "Don't Feel Threatened",
     x = "Treatment",
     y = "Difference from LS Fluent English"
-    )
+    ) +
+  theme(plot.title = element_text(size = 9))
 
 parameters <- tibble(condition = c("Accent", "Span.", "No Video", "Dark"),
        coef = map_dbl(iv_list, ~pluck(coef(q10_model), .x)),
@@ -233,7 +250,8 @@ q10_plot <- ggplot(parameters, aes(x = condition, y = coef)) +
     title = "Strengthen American Society",
     x = "Treatment",
     y = "Difference from LS Fluent English"
-    )
+    ) +
+  theme(plot.title = element_text(size = 9))
 
 parameters <- tibble(condition = c("Accent", "Span.", "No Video", "Dark"),
        coef = map_dbl(iv_list, ~pluck(coef(q12a_model), .x)),
@@ -250,7 +268,8 @@ q12a_plot <- ggplot(parameters, aes(x = condition, y = coef)) +
     title = "Social Trust",
     x = "Treatment",
     y = "Difference from LS Fluent English"
-    )
+    ) +
+  theme(plot.title = element_text(size = 9))
 
 parameters <- tibble(condition = c("Accent", "Span.", "No Video", "Dark"),
        coef = map_dbl(iv_list, ~pluck(coef(q13_model), .x)),
@@ -267,7 +286,8 @@ q13_plot <- ggplot(parameters, aes(x = condition, y = coef)) +
     title = "Don't Take Jobs",
     x = "Treatment",
     y = "Difference from LS Fluent English"
-    )
+    ) +
+  theme(plot.title = element_text(size = 9))
 
 ggarrange(q7_plot, q12a_plot, q9_plot, q10_plot, q13_plot, q8_plot,
                    ncol = 3, nrow = 2)
@@ -279,11 +299,43 @@ ggarrange(q7_plot, q12a_plot, q9_plot, q10_plot, q13_plot, q8_plot,
 
 #### Replication:
 
+```{r Replicate Figure 4, echo = FALSE}
+exp2_q7 <- exp2_cleaned %>% 
+  filter(ppethm != "Hispanic") %>% 
+  filter(q7 != -1)
+
+q7_model <- stan_glm(q7 ~ accented + spanish + years_educ + conservative + democratic + 
+                       male + black, data = exp2_q7, refresh = 0)
+
+iv_list <- c("accented", "(Intercept)", "spanish")
+parameters <- tibble(condition = c("Accent", "English", "Spanish"),
+       coef = map_dbl(iv_list, ~pluck(coef(q7_model), .x)),
+       sd = map_dbl(iv_list, ~pluck(se(q7_model), .x))
+       ) %>% 
+  mutate(condition = factor(condition, levels = condition))
+parameters[2,2:3] <- c(0, 0)
+
+ggplot(parameters, aes(x = condition, y = coef)) +
+  geom_col(alpha = 0.5, color = "black") +
+  geom_errorbar(aes(ymin = coef - sd, ymax = coef + sd), size = 1, width = 0) +
+  geom_errorbar(aes(ymin = coef - 2 * sd, ymax = coef + 2 * sd), width = 0) +
+  scale_y_continuous(limits = c(-0.2, 0.3), breaks = c(-0.2, -0.1, 0.1, 0.2, 0.3)) +
+  labs(
+    title = "Support Pathway",
+    subtitle = paste("mean = ", round(mean(exp2_q7$q7), 1), 
+                     ", SD = ", round(sd(exp2_q7$q7), 1), sep = ""),
+    x = "Treatment",
+    y = "Difference from control (English)"
+    )
+```
+
 #### Appendix A, Figure 1 from @hopkins:
 
 ![](images/hopkins-app-a-fig-1.png)
 
 #### Replication:
+
+Not able to replicate this at the moment because the data is not entirely clear, but I anticipate finding a way to process the data and create this graph soon.
 
 #### Appendix C, Table 1 from @hopkins:
 
@@ -296,8 +348,6 @@ exp1_tab1 <- exp1_cleaned %>%
   filter(ppethm != "Hispanic") %>% 
   select(income, years_educ, online, employed, conservative,
          republican, black, other, ppage)
-
-# Repeat same recodings for 2nd survey data.
 
 exp2_tab1 <- exp2_cleaned %>% 
   filter(ppethm != "Hispanic") %>% 
@@ -418,7 +468,17 @@ tab_model(q10_model, q12a_model, q13_model,
 #### Replication:
 
 ```{r Replicate App C Table 4, echo = FALSE}
+q7_model <- stan_glm(q7 ~ accented + spanish + years_educ + conservative + democratic + 
+                       male + black, data = exp2_q7, refresh = 0)
 
+tab_model(q7_model,
+          show.se = TRUE,
+          show.ci = FALSE,
+          show.r2 = FALSE,
+          digits = 3,
+          dv.labels = "Pathway",
+          pred.labels = c("Intercept", "Accented", "Spanish", "Education", "Conservative Ideo.", 
+                          "Democratic ID", "Male", "Black"))
 ```
 
 ## References
