@@ -20,7 +20,7 @@ exp2_cleaned <- exp2 %>%
   mutate(income = recode(income, "Less" = "$2500"),
          income = parse_number(income) / 1000) %>% 
   
-  # Recode Q7, Q8, Q9, Q10, Q11, & Q12 using numerical scale where
+  # Recode Q7, Q8, Q9, Q10, Q11, Q12, & Q14 using numerical scale where
   # higher numbers represent more inclusive attitudes.
   
   mutate(q7 = recode(q7, "Strongly support" = 4,
@@ -58,6 +58,13 @@ exp2_cleaned <- exp2 %>%
                       "Somewhat agree" = 3,
                       "Somewhat disagree" = 2,
                       "Strongly disagree" = 1,
+                      "Refused" = -1)
+  ) %>% 
+  mutate(q14 = recode(q14, "Every Day" = 5,
+                      "At Least Once a Week" = 4,
+                      "1-3 Times Each Month" = 3,
+                      "Less than Once a Month" = 2,
+                      "Never or Almost Never" = 1,
                       "Refused" = -1)
   ) %>% 
   
@@ -116,7 +123,7 @@ exp2_cleaned <- exp2 %>%
                            TRUE ~ 0)) %>% 
   mutate(male = recode(ppgender, "Male" = 1,
                        "Female" = 0)) %>% 
-  select(q7, q8, q9, q10, q11, q12, accented, english, spanish, income, years_educ, online, employed, conservative,
+  select(q7, q8, q9, q10, q11, q12, q14, accented, english, spanish, income, years_educ, online, employed, conservative,
          democratic, republican, black, other, male, ppage, ppethm)
 
 write_rds(exp2_cleaned, "clean-data/exp2_cleaned.rds")

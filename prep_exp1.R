@@ -17,7 +17,7 @@ exp1_cleaned <- exp1 %>%
          income = parse_number(income) / 1000
          ) %>% 
   
-  # Recode Q7, Q8, Q9, Q10, Q12, & Q13 using numerical scale.
+  # Recode Q7, Q8, Q9, Q10, Q12, Q13, & Q14 using numerical scale.
   
   mutate(q7 = recode(q7, "Strongly support" = 4,
                      "Somewhat support" = 3,
@@ -52,6 +52,13 @@ exp1_cleaned <- exp1 %>%
                       "Somewhat Likely" = 3,
                       "Very Likely" = 2,
                       "Extremely Likely" = 1,
+                      "Refused" = -1)
+         ) %>% 
+  mutate(q14 = recode(q14, "Every Day" = 5,
+                      "At Least Once a Week" = 4,
+                      "1-3 Times Each Month" = 3,
+                      "Less than Once a Month" = 2,
+                      "Never or Almost Never" = 1,
                       "Refused" = -1)
          ) %>% 
   
@@ -121,7 +128,7 @@ exp1_cleaned <- exp1 %>%
                            TRUE ~ 0)) %>% 
   mutate(male = recode(ppgender, "Male" = 1,
                        "Female" = 0)) %>% 
-  select(q7, q8, q9, q10, q12a, q13, dark, accented, no_video, spanish, english, income, years_educ, online, employed, conservative,
+  select(q7, q8, q9, q10, q12a, q13, q14, dark, accented, no_video, spanish, english, income, years_educ, online, employed, conservative,
          republican, black, other, male, ppage, ppethm)
 
 write_rds(exp1_cleaned, "clean-data/exp1_cleaned.rds")
