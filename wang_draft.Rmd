@@ -1,5 +1,5 @@
 ---
-title: "Repication of 'The Upside of Accents: Language, Inter-group Difference, and Attitudes toward Immigration'"
+title: "Replication of 'The Upside of Accents: Language, Inter-group Difference, and Attitudes toward Immigration'"
 author: "Kevin Wang"
 date: "4/14/2020"
 output:
@@ -15,6 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(gt)
 library(broom)
+library(stargazer)
 library(ggpubr)
 library(sjPlot)
 library(janitor)
@@ -56,24 +57,18 @@ exp1_q7 <- exp1_cleaned %>%
   filter(ppethm != "Hispanic") %>% 
   filter(q7 != -1)
 
-q7_model <- stan_glm(q7 ~ dark + accented + spanish + no_video + years_educ + conservative + republican + 
-                       black + male, data = exp1_q7, refresh = 0)
+q7_model <- lm(q7 ~ dark + accented + spanish + no_video + years_educ + conservative + republican + 
+                       black + male, data = exp1_q7)
 ```
 
 ## Table 1
 
-```{r Replicate Table 1, echo = FALSE}
-tab_model(q7_model,
+```{r Replicate Table 1, echo = FALSE, result = "asis"}
+stargazer(q7_model,
           title = "OLS Regression of Support for a Pathway to Naturalization on Indicators of Treatment
           Group Status and Other Independent Variables",
-          show.se = TRUE,
-          show.ci = FALSE,
-          show.r2 = FALSE,
-          digits = 3,
-          dv.labels = " ",
-          pred.labels = c("Intercept", "Dark Skin Tone", "Accented English", "Fluent Spanish",
-                        "No Video", "Years of Educ.", "Cons. Ideology", "Rep. Partisanship",
-                        "Black", "Male"))
+          header = FALSE
+          )
 ```
 
 ## Figure 2
@@ -81,9 +76,9 @@ tab_model(q7_model,
 ```{r Replicate Figure 2, echo = FALSE}
 iv_list <- c("accented", "spanish", "no_video")
 parameters <- tibble(condition = c("Accented English", "Fluent Spanish", "No Video (Control)"),
-       coef = map_dbl(iv_list, ~pluck(coef(q7_model), .x)),
-       sd = map_dbl(iv_list, ~pluck(se(q7_model), .x))
-)
+       coef = map_dbl(iv_list, ~filter(tidy(q7_model), term == .x) %>% pull(estimate)),
+       sd = map_dbl(iv_list, ~filter(tidy(q7_model), term == .x) %>% pull(std.error))
+       )
 ggplot(parameters, aes(x = condition, y = coef)) +
   geom_col(alpha = 0.5, color = "black") +
   geom_errorbar(aes(ymin = coef - sd, ymax = coef + sd), size = 1, width = 0) +
@@ -155,8 +150,8 @@ q13_model <- stan_glm(q13 ~ dark + accented + spanish + no_video + years_educ + 
 
 iv_list <- c("accented", "spanish", "no_video", "dark")
 parameters <- tibble(condition = c("Accent", "Span.", "No Video", "Dark"),
-       coef = map_dbl(iv_list, ~pluck(coef(q7_model), .x)),
-       sd = map_dbl(iv_list, ~pluck(se(q7_model), .x))
+       coef = map_dbl(iv_list, ~filter(tidy(q7_model), term == .x) %>% pull(estimate)),
+       sd = map_dbl(iv_list, ~filter(tidy(q7_model), term == .x) %>% pull(std.error))
        ) %>%
   mutate(condition = factor(condition, levels = condition))
 
@@ -176,8 +171,8 @@ q7_plot <- ggplot(parameters, aes(x = condition, y = coef)) +
         )
 
 parameters <- tibble(condition = c("Accent", "Span.", "No Video", "Dark"),
-       coef = map_dbl(iv_list, ~pluck(coef(q8_model), .x)),
-       sd = map_dbl(iv_list, ~pluck(se(q8_model), .x))
+       coef = map_dbl(iv_list, ~filter(tidy(q8_model), term == .x) %>% pull(estimate)),
+       sd = map_dbl(iv_list, ~filter(tidy(q8_model), term == .x) %>% pull(std.error))
        ) %>% 
   mutate(condition = factor(condition, levels = condition))
 
@@ -197,8 +192,8 @@ q8_plot <- ggplot(parameters, aes(x = condition, y = coef)) +
         )
 
 parameters <- tibble(condition = c("Accent", "Span.", "No Video", "Dark"),
-       coef = map_dbl(iv_list, ~pluck(coef(q9_model), .x)),
-       sd = map_dbl(iv_list, ~pluck(se(q9_model), .x))
+       coef = map_dbl(iv_list, ~filter(tidy(q9_model), term == .x) %>% pull(estimate)),
+       sd = map_dbl(iv_list, ~filter(tidy(q9_model), term == .x) %>% pull(std.error))
        ) %>% 
   mutate(condition = factor(condition, levels = condition))
 
@@ -218,8 +213,8 @@ q9_plot <- ggplot(parameters, aes(x = condition, y = coef)) +
         )
 
 parameters <- tibble(condition = c("Accent", "Span.", "No Video", "Dark"),
-       coef = map_dbl(iv_list, ~pluck(coef(q10_model), .x)),
-       sd = map_dbl(iv_list, ~pluck(se(q10_model), .x))
+       coef = map_dbl(iv_list, ~filter(tidy(q10_model), term == .x) %>% pull(estimate)),
+       sd = map_dbl(iv_list, ~filter(tidy(q10_model), term == .x) %>% pull(std.error))
        ) %>% 
   mutate(condition = factor(condition, levels = condition))
 
@@ -239,8 +234,8 @@ q10_plot <- ggplot(parameters, aes(x = condition, y = coef)) +
         )
 
 parameters <- tibble(condition = c("Accent", "Span.", "No Video", "Dark"),
-       coef = map_dbl(iv_list, ~pluck(coef(q12a_model), .x)),
-       sd = map_dbl(iv_list, ~pluck(se(q12a_model), .x))
+       coef = map_dbl(iv_list, ~filter(tidy(q12a_model), term == .x) %>% pull(estimate)),
+       sd = map_dbl(iv_list, ~filter(tidy(q12a_model), term == .x) %>% pull(std.error))
        ) %>% 
   mutate(condition = factor(condition, levels = condition))
 
@@ -260,8 +255,8 @@ q12a_plot <- ggplot(parameters, aes(x = condition, y = coef)) +
         )
 
 parameters <- tibble(condition = c("Accent", "Span.", "No Video", "Dark"),
-       coef = map_dbl(iv_list, ~pluck(coef(q13_model), .x)),
-       sd = map_dbl(iv_list, ~pluck(se(q13_model), .x))
+       coef = map_dbl(iv_list, ~filter(tidy(q13_model), term == .x) %>% pull(estimate)),
+       sd = map_dbl(iv_list, ~filter(tidy(q13_model), term == .x) %>% pull(std.error))
        ) %>% 
   mutate(condition = factor(condition, levels = condition))
 
@@ -296,8 +291,8 @@ q7_model <- stan_glm(q7 ~ accented + spanish + years_educ + conservative + democ
 
 iv_list <- c("accented", "(Intercept)", "spanish")
 parameters <- tibble(condition = c("Accent", "English", "Spanish"),
-       coef = map_dbl(iv_list, ~pluck(coef(q7_model), .x)),
-       sd = map_dbl(iv_list, ~pluck(se(q7_model), .x))
+       coef = map_dbl(iv_list, ~filter(tidy(q7_model), term == .x) %>% pull(estimate)),
+       sd = map_dbl(iv_list, ~filter(tidy(q7_model), term == .x) %>% pull(std.error))
        ) %>% 
   mutate(condition = factor(condition, levels = condition))
 parameters[2,2] <- 0
@@ -384,8 +379,8 @@ q13_model <- stan_glm(q13 ~ dark + accented + q14 + spanish + no_video + years_e
 
 iv_list <- c("accented", "no_video", "q14")
 parameters <- tibble(condition = c("Accent", "No Video", "Span. Familiar"),
-       coef = map_dbl(iv_list, ~pluck(coef(q7_model), .x)),
-       sd = map_dbl(iv_list, ~pluck(se(q7_model), .x))
+       coef = map_dbl(iv_list, ~filter(tidy(q7_model), term == .x) %>% pull(estimate)),
+       sd = map_dbl(iv_list, ~filter(tidy(q7_model), term == .x) %>% pull(std.error))
        ) %>%
   mutate(condition = factor(condition, levels = condition))
 
@@ -405,8 +400,8 @@ q7_plot <- ggplot(parameters, aes(x = condition, y = coef)) +
         )
 
 parameters <- tibble(condition = c("Accent", "No Video", "Span. Familiar"),
-       coef = map_dbl(iv_list, ~pluck(coef(q8_model), .x)),
-       sd = map_dbl(iv_list, ~pluck(se(q8_model), .x))
+       coef = map_dbl(iv_list, ~filter(tidy(q8_model), term == .x) %>% pull(estimate)),
+       sd = map_dbl(iv_list, ~filter(tidy(q8_model), term == .x) %>% pull(std.error))
        ) %>% 
   mutate(condition = factor(condition, levels = condition))
 
@@ -426,8 +421,8 @@ q8_plot <- ggplot(parameters, aes(x = condition, y = coef)) +
         )
 
 parameters <- tibble(condition = c("Accent", "No Video", "Span. Familiar"),
-       coef = map_dbl(iv_list, ~pluck(coef(q9_model), .x)),
-       sd = map_dbl(iv_list, ~pluck(se(q9_model), .x))
+       coef = map_dbl(iv_list, ~filter(tidy(q9_model), term == .x) %>% pull(estimate)),
+       sd = map_dbl(iv_list, ~filter(tidy(q9_model), term == .x) %>% pull(std.error))
        ) %>% 
   mutate(condition = factor(condition, levels = condition))
 
@@ -447,8 +442,8 @@ q9_plot <- ggplot(parameters, aes(x = condition, y = coef)) +
         )
 
 parameters <- tibble(condition = c("Accent", "No Video", "Span. Familiar"),
-       coef = map_dbl(iv_list, ~pluck(coef(q10_model), .x)),
-       sd = map_dbl(iv_list, ~pluck(se(q10_model), .x))
+       coef = map_dbl(iv_list, ~filter(tidy(q10_model), term == .x) %>% pull(estimate)),
+       sd = map_dbl(iv_list, ~filter(tidy(q10_model), term == .x) %>% pull(std.error))
        ) %>% 
   mutate(condition = factor(condition, levels = condition))
 
@@ -468,8 +463,8 @@ q10_plot <- ggplot(parameters, aes(x = condition, y = coef)) +
         )
 
 parameters <- tibble(condition = c("Accent", "No Video", "Span. Familiar"),
-       coef = map_dbl(iv_list, ~pluck(coef(q12a_model), .x)),
-       sd = map_dbl(iv_list, ~pluck(se(q12a_model), .x))
+       coef = map_dbl(iv_list, ~filter(tidy(q12a_model), term == .x) %>% pull(estimate)),
+       sd = map_dbl(iv_list, ~filter(tidy(q12a_model), term == .x) %>% pull(std.error))
        ) %>% 
   mutate(condition = factor(condition, levels = condition))
 
@@ -489,8 +484,8 @@ q12a_plot <- ggplot(parameters, aes(x = condition, y = coef)) +
         )
 
 parameters <- tibble(condition = c("Accent", "No Video", "Span. Familiar"),
-       coef = map_dbl(iv_list, ~pluck(coef(q13_model), .x)),
-       sd = map_dbl(iv_list, ~pluck(se(q13_model), .x))
+       coef = map_dbl(iv_list, ~filter(tidy(q13_model), term == .x) %>% pull(estimate)),
+       sd = map_dbl(iv_list, ~filter(tidy(q13_model), term == .x) %>% pull(std.error))
        ) %>% 
   mutate(condition = factor(condition, levels = condition))
 
