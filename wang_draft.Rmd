@@ -1,20 +1,17 @@
 ---
-title: 'Milestone #7'
+title: "Repication of 'The Upside of Accents: Language, Inter-group Difference, and Attitudes toward Immigration'"
 author: "Kevin Wang"
-date: "4/17/2020"
+date: "4/14/2020"
 output:
   bookdown::pdf_document2:
     keep_tex: true
-bibliography: milestone_7.bib
+bibliography: wang_draft.bib
 biblio-style: "apalike"
 link_citations: true
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-
-# Removed knitr bib options line; otherwise, bib file
-# kept being overwritten with old version.
 
 library(gt)
 library(broom)
@@ -32,15 +29,11 @@ exp2_cleaned <- read_rds("clean-data/exp2_cleaned.rds") %>%
   clean_names()
 ```
 
-## Abstract
+# Abstract
 
-@hopkins finds that exposing survey respondents to video of an immigrant with "culturally distinctive" traits causes the respondents to adopt more inclusive attitudes toward immigration. I successfully replicated Hopkins's results and extended his model to account for varying levels of preexisting Spanish exposure among respondents that might influence their responses to such traits.
+Hopkins (2015) finds that exposing survey respondents to video of an immigrant with "culturally distinctive" traits causes the respondents to adopt more inclusive attitudes toward immigration. I successfully replicated Hopkins's results and extended his model to account for varying levels of preexisting Spanish exposure among respondents that might influence their responses to such traits.
 
 # Introduction
-
-This is my Milestone #7 extension document. You may also refer to the Github repo of my final project.^[All analysis for this project can be found at https://github.com/kevpwang/replication_project.git]
-
-# Overview
 
 @hopkins builds on prior research and sociological theory suggesting that observation of immigrants' "culturally distinctive" traits induces anti-immigrant attitudes in members of society from the dominant cultural background. Hopkins seeks to empirically determine whether immigrants who appear more "culturally distinctive" generate more hostile responses. Specifically, noting the rapid growth of Hispanic immigration to the US, Hopkins shows a nationally representative sample of non-Hispanic Americans videos, adapted from an ABC news clip, of an "undocumented Hispanic immigrant" expressing support for assimilation and a path to citizenship. The video is edited such that the immigrant is blurred, appears either visibly dark- or light-skinned, and speaks either fluent Spanish, fluent but subtly accented English, or broken English. 8 percent of the sample, the control group, were not shown any video, while the remaining 92 percent was randomly assigned to one of six possible videos (combinations of skin tone and English fluency). After the video, the sample was surveyed about their opinion on a path to citizenship for undocumented immigrants, with answers corresponding to a numerical scale of 1 ("strongly oppose") to 4 ("strongly support"). They were also surveyed on five other immigration-related questions.
 
@@ -50,11 +43,7 @@ Hopkins runs a linear regression on attitudes toward a path to citizenship using
 
 Previous literature develops several theories which might explain intergroup conflict. The ethnocentrism-based approach, outlined in @kinderkam, holds that individuals are predisposed to divide society into in-groups and out-groups. On the other hand, other hypotheses, like @webercrocker, propound the primacy of skin-tone and argue that darker skin tone is determinative of more exclusionary attitudes.
 
-# Replication Progress
-
-The replication is based on @king. I was able to replicate all but three charts and tables from @hopkins. I am not able to replicate Appendix A, Figure 1 because it is not entirely clear where that data is in the dataset and how to process it, but I anticipate coming up with a method soon. I can only partially replicate Figure 4 and Appendix C, Table 4 because the method for calculating the six-question index is not specified anywhere in the paper; I may have to email Hopkins and ask. The only additional aspect I am unable to replicate is the "free step-down resampling method" for generating the appropriate corrected p-values for Figure 3.
-
-# Beautiful Graphic
+# Replications
 
 ```{r Linear Q7 model, echo = FALSE}
 
@@ -70,6 +59,24 @@ exp1_q7 <- exp1_cleaned %>%
 q7_model <- stan_glm(q7 ~ dark + accented + spanish + no_video + years_educ + conservative + republican + 
                        black + male, data = exp1_q7, refresh = 0)
 ```
+
+## Table 1
+
+```{r Replicate Table 1, echo = FALSE}
+tab_model(q7_model,
+          title = "OLS Regression of Support for a Pathway to Naturalization on Indicators of Treatment
+          Group Status and Other Independent Variables",
+          show.se = TRUE,
+          show.ci = FALSE,
+          show.r2 = FALSE,
+          digits = 3,
+          dv.labels = " ",
+          pred.labels = c("Intercept", "Dark Skin Tone", "Accented English", "Fluent Spanish",
+                        "No Video", "Years of Educ.", "Cons. Ideology", "Rep. Partisanship",
+                        "Black", "Male"))
+```
+
+## Figure 2
 
 ```{r Replicate Figure 2, echo = FALSE}
 iv_list <- c("accented", "spanish", "no_video")
@@ -91,6 +98,228 @@ ggplot(parameters, aes(x = condition, y = coef)) +
 ```
 
 The gray bars depict the difference in subjects' support for a path to naturalization compared to that of subjects who saw a light-skinned immigrant fluently speaking English. Support is measured numerically from 1 (strongly oppose) to 4 (strongly support). The thick vertical lines represent the interval of one standard error, while the thin vertical lines represent the 95 percent conficence interval.
+
+## Figure 3
+
+```{r All models, echo = FALSE, cache = TRUE}
+
+# Create models for all six questions.
+
+q7_model <- stan_glm(q7 ~ dark + accented + spanish + no_video + years_educ + conservative + republican + 
+                       black + male, data = exp1_q7, refresh = 0)
+
+exp1_q8 <- exp1_cleaned %>% 
+  filter(ppethm != "Hispanic") %>% 
+  filter(q8 != -1)
+
+q8_model <- stan_glm(q8 ~ dark + accented + spanish + no_video + years_educ + conservative + republican + 
+                       black + male, data = exp1_q8, refresh = 0)
+
+exp1_q9 <- exp1_cleaned %>% 
+  filter(ppethm != "Hispanic") %>% 
+  filter(q9 != -1)
+
+q9_model <- stan_glm(q9 ~ dark + accented + spanish + no_video + years_educ + conservative + republican + 
+                       black + male, data = exp1_q9, refresh = 0)
+
+exp1_q10 <- exp1_cleaned %>% 
+  filter(ppethm != "Hispanic") %>% 
+  filter(q10 != -1)
+
+q10_model <- stan_glm(q10 ~ dark + accented + spanish + no_video + years_educ + conservative + republican + 
+                       black + male, data = exp1_q10, refresh = 0)
+
+exp1_q12a <- exp1_cleaned %>% 
+  filter(ppethm != "Hispanic") %>% 
+  drop_na(q12a) %>% 
+  filter(q12a != -1)
+
+# Supposedly logistic, but for some reason the plot is of a linear analysis.
+
+q12a_model <- stan_glm(q12a ~ dark + accented + spanish + no_video + years_educ + conservative + republican + 
+                       black + male, data = exp1_q12a, refresh = 0)
+
+exp1_q13 <- exp1_cleaned %>% 
+  filter(ppethm != "Hispanic") %>% 
+  filter(q13 != -1)
+
+q13_model <- stan_glm(q13 ~ dark + accented + spanish + no_video + years_educ + conservative + republican + 
+                       black + male, data = exp1_q13, refresh = 0)
+```
+
+```{r Replicate Figure 3, echo = FALSE}
+
+# map() does not work here & nesting map() is probably not worth the
+# trouble, especially since I'm not sure how to facet_wrap() geom_col()
+# & give each graph its own separate title.
+
+iv_list <- c("accented", "spanish", "no_video", "dark")
+parameters <- tibble(condition = c("Accent", "Span.", "No Video", "Dark"),
+       coef = map_dbl(iv_list, ~pluck(coef(q7_model), .x)),
+       sd = map_dbl(iv_list, ~pluck(se(q7_model), .x))
+       ) %>%
+  mutate(condition = factor(condition, levels = condition))
+
+q7_plot <- ggplot(parameters, aes(x = condition, y = coef)) +
+  geom_col(alpha = 0.5, color = "black") +
+  geom_errorbar(aes(ymin = coef - sd, ymax = coef + sd), size = 1, width = 0) +
+  geom_errorbar(aes(ymin = coef - 2 * sd, ymax = coef + 2 * sd), width = 0) +
+  scale_y_continuous(limits = c(-0.4, 0.4)) +
+  labs(
+    title = "Support Pathway",
+    x = "Treatment",
+    y = "Difference from LS Fluent English"
+    ) +
+  theme(plot.title = element_text(size = 9),
+        axis.title = element_text(size = 9),
+        axis.text = element_text(size = 5)
+        )
+
+parameters <- tibble(condition = c("Accent", "Span.", "No Video", "Dark"),
+       coef = map_dbl(iv_list, ~pluck(coef(q8_model), .x)),
+       sd = map_dbl(iv_list, ~pluck(se(q8_model), .x))
+       ) %>% 
+  mutate(condition = factor(condition, levels = condition))
+
+q8_plot <- ggplot(parameters, aes(x = condition, y = coef)) +
+  geom_col(alpha = 0.5, color = "black") +
+  geom_errorbar(aes(ymin = coef - sd, ymax = coef + sd), size = 1, width = 0) +
+  geom_errorbar(aes(ymin = coef - 2 * sd, ymax = coef + 2 * sd), width = 0) +
+  scale_y_continuous(limits = c(-0.4, 0.4)) +
+  labs(
+    title = "Support Increased Immigration",
+    x = "Treatment",
+    y = "Difference from LS Fluent English"
+    ) +
+  theme(plot.title = element_text(size = 9),
+        axis.title = element_text(size = 9),
+        axis.text = element_text(size = 5)
+        )
+
+parameters <- tibble(condition = c("Accent", "Span.", "No Video", "Dark"),
+       coef = map_dbl(iv_list, ~pluck(coef(q9_model), .x)),
+       sd = map_dbl(iv_list, ~pluck(se(q9_model), .x))
+       ) %>% 
+  mutate(condition = factor(condition, levels = condition))
+
+q9_plot <- ggplot(parameters, aes(x = condition, y = coef)) +
+  geom_col(alpha = 0.5, color = "black") +
+  geom_errorbar(aes(ymin = coef - sd, ymax = coef + sd), size = 1, width = 0) +
+  geom_errorbar(aes(ymin = coef - 2 * sd, ymax = coef + 2 * sd), width = 0) +
+  scale_y_continuous(limits = c(-0.4, 0.3), breaks = c(-0.4, -0.2, 0.1, 0.2, 0.3)) +
+  labs(
+    title = "Don't Feel Threatened",
+    x = "Treatment",
+    y = "Difference from LS Fluent English"
+    ) +
+  theme(plot.title = element_text(size = 9),
+        axis.title = element_text(size = 9),
+        axis.text = element_text(size = 5)
+        )
+
+parameters <- tibble(condition = c("Accent", "Span.", "No Video", "Dark"),
+       coef = map_dbl(iv_list, ~pluck(coef(q10_model), .x)),
+       sd = map_dbl(iv_list, ~pluck(se(q10_model), .x))
+       ) %>% 
+  mutate(condition = factor(condition, levels = condition))
+
+q10_plot <- ggplot(parameters, aes(x = condition, y = coef)) +
+  geom_col(alpha = 0.5, color = "black") +
+  geom_errorbar(aes(ymin = coef - sd, ymax = coef + sd), size = 1, width = 0) +
+  geom_errorbar(aes(ymin = coef - 2 * sd, ymax = coef + 2 * sd), width = 0) +
+  scale_y_continuous(limits = c(-0.3, 0.3), breaks = c(-0.3, -0.1, 0.1, 0.3)) +
+  labs(
+    title = "Strengthen American Society",
+    x = "Treatment",
+    y = "Difference from LS Fluent English"
+    ) +
+  theme(plot.title = element_text(size = 9),
+        axis.title = element_text(size = 9),
+        axis.text = element_text(size = 5)
+        )
+
+parameters <- tibble(condition = c("Accent", "Span.", "No Video", "Dark"),
+       coef = map_dbl(iv_list, ~pluck(coef(q12a_model), .x)),
+       sd = map_dbl(iv_list, ~pluck(se(q12a_model), .x))
+       ) %>% 
+  mutate(condition = factor(condition, levels = condition))
+
+q12a_plot <- ggplot(parameters, aes(x = condition, y = coef)) +
+  geom_col(alpha = 0.5, color = "black") +
+  geom_errorbar(aes(ymin = coef - sd, ymax = coef + sd), size = 1, width = 0) +
+  geom_errorbar(aes(ymin = coef - 2 * sd, ymax = coef + 2 * sd), width = 0) +
+  scale_y_continuous(limits = c(-0.3, 0.3), breaks = c(-0.3, -0.1, 0.1, 0.3)) +
+  labs(
+    title = "Social Trust",
+    x = "Treatment",
+    y = "Difference from LS Fluent English"
+    ) +
+  theme(plot.title = element_text(size = 9),
+        axis.title = element_text(size = 9),
+        axis.text = element_text(size = 5)
+        )
+
+parameters <- tibble(condition = c("Accent", "Span.", "No Video", "Dark"),
+       coef = map_dbl(iv_list, ~pluck(coef(q13_model), .x)),
+       sd = map_dbl(iv_list, ~pluck(se(q13_model), .x))
+       ) %>% 
+  mutate(condition = factor(condition, levels = condition))
+
+q13_plot <- ggplot(parameters, aes(x = condition, y = coef)) +
+  geom_col(alpha = 0.5, color = "black") +
+  geom_errorbar(aes(ymin = coef - sd, ymax = coef + sd), size = 1, width = 0) +
+  geom_errorbar(aes(ymin = coef - 2 * sd, ymax = coef + 2 * sd), width = 0) +
+  scale_y_continuous(limits = c(-0.3, 0.3), breaks = c(-0.3, -0.1, 0.1, 0.3)) +
+  labs(
+    title = "Don't Take Jobs",
+    x = "Treatment",
+    y = "Difference from LS Fluent English"
+    ) +
+  theme(plot.title = element_text(size = 9),
+        axis.title = element_text(size = 9),
+        axis.text = element_text(size = 5)
+        )
+
+ggarrange(q7_plot, q12a_plot, q9_plot, q10_plot, q13_plot, q8_plot,
+                   ncol = 3, nrow = 2)
+```
+
+## Figure 4
+
+```{r Replicate Figure 4, echo = FALSE}
+exp2_q7 <- exp2_cleaned %>% 
+  filter(ppethm != "Hispanic") %>% 
+  filter(q7 != -1)
+
+q7_model <- stan_glm(q7 ~ accented + spanish + years_educ + conservative + democratic + 
+                       male + black, data = exp2_q7, refresh = 0)
+
+iv_list <- c("accented", "(Intercept)", "spanish")
+parameters <- tibble(condition = c("Accent", "English", "Spanish"),
+       coef = map_dbl(iv_list, ~pluck(coef(q7_model), .x)),
+       sd = map_dbl(iv_list, ~pluck(se(q7_model), .x))
+       ) %>% 
+  mutate(condition = factor(condition, levels = condition))
+parameters[2,2] <- 0
+parameters[2,3] <- 0
+
+ggplot(parameters, aes(x = condition, y = coef)) +
+  geom_col(alpha = 0.5, color = "black") +
+  geom_errorbar(aes(ymin = coef - sd, ymax = coef + sd), size = 1, width = 0) +
+  geom_errorbar(aes(ymin = coef - 2 * sd, ymax = coef + 2 * sd), width = 0) +
+  scale_y_continuous(limits = c(-0.2, 0.3), breaks = c(-0.2, -0.1, 0.1, 0.2, 0.3)) +
+  labs(
+    title = "Support Pathway",
+    subtitle = paste("mean = ", round(mean(exp2_q7$q7), 1), 
+                     ", SD = ", round(sd(exp2_q7$q7), 1), sep = ""),
+    x = "Treatment",
+    y = "Difference from control (English)"
+    )
+```
+
+# Replication Progress
+
+The replication is based on @king. I was able to replicate all but three charts and tables from @hopkins. I am not able to replicate Appendix A, Figure 1 because it is not entirely clear where that data is in the dataset and how to process it, but I anticipate coming up with a method soon. I can only partially replicate Figure 4 and Appendix C, Table 4 because the method for calculating the six-question index is not specified anywhere in the paper; I may have to email Hopkins and ask. The only additional aspect I am unable to replicate is the "free step-down resampling method" for generating the appropriate corrected p-values for Figure 3.
 
 # Extension
 
@@ -287,65 +516,5 @@ ggarrange(q7_plot, q12a_plot, q9_plot, q10_plot, q13_plot, q8_plot,
 I modified the regressions on all six original questions from @hopkins to include familiarity with Spanish. The question is coded on a numerical scale from 1 to 5 with 5 as hearing Spanish "every day". The results of the analysis are surprising and run counter to expectations. Since @hopkins finds that responses to the "increased legal immigration" question are correlated differently than the other questions, we will set aside that question as similarly anomalous. As the figure above shows, on all four remaining immigration-related questions, the effect of familarity with Spanish is exactly opposite that of accented English. Respondents who are more familiar with Spanish in daily life tend to record more exclusionary responses. For most questions, the familiarity coefficient is significantly smaller than the coefficient of accented English, but the associated uncertainty is also significantly smaller, indicating that the effect is likely to be consistent.
 
 This extension of the model does not necessarily change the fundamental conclusions of @hopkins. The chief finding, that accented English elicits inclusionary rather than exclusionary responses, remains valid and the effect is unchanged by the new model. Rather, the extension raises questions about the preconditions that would cause positive or negative reactions in response to "culturally distinctive" traits. Contrary to @enos, the data from @hopkins suggest that lack of familiarity does not necessarily result in hostility, nor does prolonged familiarity abate hostility. Further inquiry is needed on the effects of long-term exposure to cultural diversity.
-
-# (APPENDIX) Appendix {-} 
-
-# Appendix A
-
-## Replication of Appendix C, Table 1 from @hopkins:
-
-![](images/hopkins-app-c-tab-1.png)
-
-```{r Replicate App C Table 1, echo = FALSE}
-exp1_tab1 <- exp1_cleaned %>% 
-  filter(ppethm != "Hispanic") %>% 
-  select(income, years_educ, online, employed, conservative,
-         republican, black, other, ppage)
-
-exp2_tab1 <- exp2_cleaned %>% 
-  filter(ppethm != "Hispanic") %>% 
-  select(income, years_educ, online, employed, conservative,
-         republican, black, other, ppage)
-
-table <- tibble(labels = c("Income", "Years of Education", "Online", "Employed",
-                           "Conservative", "Republica", "Black", "Other", "Age"),
-                mean1 = colMeans(exp1_tab1),
-                sd1 = apply(exp1_tab1, 2, sd),
-                min1 = apply(exp1_tab1, 2, min),
-                max1 = apply(exp1_tab1, 2, max),
-                mean2 = colMeans(exp2_tab1),
-                sd2 = apply(exp2_tab1, 2, sd),
-                min2 = apply(exp2_tab1, 2, min),
-                max2 = apply(exp2_tab1, 2, max)
-                )
-table %>% 
-  gt() %>% 
-  tab_spanner(
-    label = "August 2010 Experiment",
-    columns = vars(mean1, sd1, min1, max1)
-  ) %>% 
-  tab_spanner(
-    label = "January 2011 Experiment",
-    columns = vars(mean2, sd2, min2, max2)
-  ) %>% 
-  fmt_number(
-    decimals = 2,
-    columns = vars(mean1, sd1, min1, max1, 
-                   mean2, sd2, min2, max2)
-  ) %>% 
-  cols_label(
-    labels = "",
-    mean1 = "Mean",
-    sd1 = "SD",
-    min1 = "Min.",
-    max1 = "Max.",
-    mean2 = "Mean",
-    sd2 = "SD",
-    min2 = "Min.",
-    max2 = "Max.",
-  )
-```
-
-The most significant differences between @hopkins and my replication are income and education. For income, the published data only gives ranges, not exact values. I decided to recode using the floor of each range (e.g. "5000 to 7499" becomes 5000) in order to get an accurate minimum value; this predictably results in my mean value being lower than @hopkins. Similarly, in many cases, the data only gives educational attainment (e.g. "some college", "professional/graduate") and not exact years, so I had to make some assumptions while recoding (e.g. coding "professional/graduate" as 20 years by default). Once again, this predictably results in differences between my values and @hopkins, though less significantly so than for income.
 
 # References
