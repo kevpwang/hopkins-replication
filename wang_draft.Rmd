@@ -63,7 +63,7 @@ q7_model <- lm(q7 ~ dark + accented + spanish + no_video + years_educ + conserva
 
 ## Table 1
 
-```{r Replicate Table 1, echo = FALSE, result = "asis"}
+```{r Replicate Table 1, echo = FALSE, results = "asis"}
 stargazer(q7_model,
           title = "OLS Regression of Support for a Pathway to Naturalization on Indicators of Treatment
           Group Status and Other Independent Variables",
