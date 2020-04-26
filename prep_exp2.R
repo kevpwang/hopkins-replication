@@ -9,11 +9,11 @@ exp2 <- read.dta("raw-data/accentsexp2.dta") %>%
 
 exp2_cleaned <- exp2 %>% 
   
-  # Drop NAs for partyid & ideo, as original table does.
-  
-  drop_na(partyid7, ideology) %>% 
-  
+  # Remove non-respondents
   # Remove respondents who left too early or did not take the survey in one sitting.
+  
+  filter(qflag == "Qualified") %>% 
+  filter(duration <= 30 & video_time >= 40) %>% 
 
   separate(ppincimp, c("income", "dis1", "dis2"), " ")  %>% 
   select(-dis1, -dis2) %>% 
@@ -93,7 +93,7 @@ exp2_cleaned <- exp2 %>%
                              TRUE ~ 0),
          english = case_when(assigned_video == "Video I" ~ 1,
                              TRUE ~ 0)
-  ) %>% 
+         ) %>% 
   mutate(online = recode(ppnet, "Yes" = 1,
                          "No" = 0)) %>% 
   mutate(employed = case_when(grepl("Not working", ppwork) ~ 0,
