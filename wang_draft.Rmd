@@ -1,7 +1,7 @@
 ---
-title: "Replication of 'The Upside of Accents: Language, Inter-group Difference, and Attitudes toward Immigration'"
+title: 'Replication of "The Upside of Accents: Language, Inter-group Difference, and Attitudes toward Immigration"'
 author: "Kevin Wang"
-date: "4/14/2020"
+date: "4/25/2020"
 output:
   bookdown::pdf_document2:
     keep_tex: true
@@ -22,7 +22,7 @@ library(janitor)
 library(rstanarm)
 library(tidyverse)
 
-# Read cleaned data from clean-data.
+# Read cleaned data from ./clean-data.
 
 exp1_cleaned <- read_rds("clean-data/exp1_cleaned.rds") %>% 
   clean_names()
@@ -32,17 +32,17 @@ exp2_cleaned <- read_rds("clean-data/exp2_cleaned.rds") %>%
 
 # Abstract
 
-Hopkins (2015) finds that exposing survey respondents to video of an immigrant with "culturally distinctive" traits causes the respondents to adopt more inclusive attitudes toward immigration. I successfully replicated Hopkins's results and extended his model to account for varying levels of preexisting Spanish exposure among respondents that might influence their responses to such traits.
+Hopkins (2015) finds that exposing a nationally representative sample of Americans to video of an immigrant speaking accented English causes the respondents to adopt more inclusionary attitudes. I successfully replicated Hopkins's results, except for a minor manipulation check and the composite immigration index. As an extension, I modified the original regression by adding respondents' self-reported familiarity with Spanish in real life. I found that respondents who reported more frequent encounters with Spanish tended to hold more restrictionist views. This result suggests the difficulty of changing exclusionary attitudes developed through long-term contact with culturally distinctive traits in daily life.
 
 # Introduction
 
-@hopkins builds on prior research and sociological theory suggesting that observation of immigrants' "culturally distinctive" traits induces anti-immigrant attitudes in members of society from the dominant cultural background. Hopkins seeks to empirically determine whether immigrants who appear more "culturally distinctive" generate more hostile responses. Specifically, noting the rapid growth of Hispanic immigration to the US, Hopkins shows a nationally representative sample of non-Hispanic Americans videos, adapted from an ABC news clip, of an "undocumented Hispanic immigrant" expressing support for assimilation and a path to citizenship. The video is edited such that the immigrant is blurred, appears either visibly dark- or light-skinned, and speaks either fluent Spanish, fluent but subtly accented English, or broken English. 8 percent of the sample, the control group, were not shown any video, while the remaining 92 percent was randomly assigned to one of six possible videos (combinations of skin tone and English fluency). After the video, the sample was surveyed about their opinion on a path to citizenship for undocumented immigrants, with answers corresponding to a numerical scale of 1 ("strongly oppose") to 4 ("strongly support"). They were also surveyed on five other immigration-related questions.
+@hopkins tests prior hypotheses about natives' responses to culturally distinctive immigrants. Hopkins shows two nationally representative samples of non-Hispanic Americans video, adapted from an ABC news clip, of an undocumented Hispanic immigrant expressing support for assimilation and a path to citizenship. The video is edited such that the immigrant is visibly either dark- or light-skinned and speaks either fluent Spanish, fluent English, or heavily accented English. Afterwards, respondents are surveyed about a path to citizenship for undocumented immigrants, as well as other immigration-related questions. Hopkins runs OLS and logistic regressions on responses to these questions using indicators for treatment as well as conservatism, gender, and other respondent traits. Contrary to prior results like @blairetal suggesting the primacy of skin tone, Hopkins finds that skin tone does not meaningfully shift attitudes. Moreover, there is no difference between responses to fluent English or Spanish, but significantly more pro-immigrant responses to broken English. Hopkins theorizes that rather than heightening perceptions of cultural difference, a broken English speaker reinforces positive stereotypes about norms of hard work and assimilation.
 
-Hopkins runs a linear regression on attitudes toward a path to citizenship using skin tone, video language fluency, respondent years of education, conservatism, partisanship, race (white/black), and gender as explanatory variables. He also runs linear or logistic regressions between each of the other five questions and video language fluency. The principal results of the paper relate to the effect of skin tone and language. Hopkins finds that skin tone does not meaningfully shift change attitudes. Moreover, contrary to expectations that more distinctive traits would engender greater hostility, Hopkins finds no difference between exposure to fluent English or Spanish, and significantly increased support for a pathway to citizenship among those who heard broken English. Hopkins theorizes that rather than reinforce perceptions of cultural difference, a broken English speaker actually challenges stereotypes by exemplifying immigrants' desire to assimilate with American norms.
+I obtained data from Hopkins's webpage ^[Data and codebooks from @Hopkins may be found at http://web.sas.upenn.edu/danhop/research/]. All replication code was written in R^[@R] and may be found in my Github repo^[https://github.com/kevpwang/hopkins-replication].
 
 # Literature Review
 
-Previous literature develops several theories which might explain intergroup conflict. The ethnocentrism-based approach, outlined in @kinderkam, holds that individuals are predisposed to divide society into in-groups and out-groups. On the other hand, other hypotheses, like @webercrocker, propound the primacy of skin-tone and argue that darker skin tone is determinative of more exclusionary attitudes.
+Previous literature develops several theories to predict and explain responses to culturally distinctive traits. The ethnocentrism-based approach, outlined in @kinderkam, holds that individuals are predisposed to divide society into in-groups and out-groups. On the other hand, other hypotheses, like @webercrocker, propound the primacy of skin-tone and argue that darker skin tone is determinative of more exclusionary attitudes.
 
 # Replication Progress
 
@@ -243,5 +243,34 @@ ggarrange(q7_plot, q12a_plot, q9_plot, q10_plot, q13_plot, q8_plot,
 I modified the regressions on all six original questions from @hopkins to include familiarity with Spanish. The question is coded on a numerical scale from 1 to 5 with 5 as hearing Spanish "every day". The results of the analysis are surprising and run counter to expectations. Since @hopkins finds that responses to the "increased legal immigration" question are correlated differently than the other questions, we will set aside that question as similarly anomalous. As the figure above shows, on all four remaining immigration-related questions, the effect of familarity with Spanish is exactly opposite that of accented English. Respondents who are more familiar with Spanish in daily life tend to record more exclusionary responses. For most questions, the familiarity coefficient is significantly smaller than the coefficient of accented English, but the associated uncertainty is also significantly smaller, indicating that the effect is likely to be consistent.
 
 This extension of the model does not necessarily change the fundamental conclusions of @hopkins. The chief finding, that accented English elicits inclusionary rather than exclusionary responses, remains valid and the effect is unchanged by the new model. Rather, the extension raises questions about the preconditions that would cause positive or negative reactions in response to "culturally distinctive" traits. Contrary to @enos, the data from @hopkins suggest that lack of familiarity does not necessarily result in hostility, nor does prolonged familiarity abate hostility. Further inquiry is needed on the effects of long-term exposure to cultural diversity.
+
+# (APPENDIX) Appendix {-} 
+
+# Appendix
+
+## Replication of Table 1, @hopkins 
+
+![](hopkins-files/hopkins-tab-1.png)
+
+```{r Tab 1 replication, echo = FALSE, results = "asis"}
+# Regression analysis for Q7 path to citizenship
+# Hopkins excludes Hispanics; sensible to exclude 'refused'
+
+exp1_q7 <- exp1_cleaned %>% 
+  filter(ppethm != "Hispanic") %>% 
+  filter(q7 != -1)
+
+q7_model <- lm(q7 ~ dark + accented + spanish + no_video + years_educ + conservative + republican + 
+                 black + male, data = exp1_q7)
+
+# Reg table with stargazer 
+# header = FALSE to get rid of stargazer tag
+
+stargazer(q7_model,
+          title = "OLS Regression of Support for a Pathway to Naturalization on Indicators of Treatment
+          Group Status and Other Independent Variables",
+          digits = 3,
+          header = FALSE)
+```
 
 # References
