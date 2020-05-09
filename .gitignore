@@ -9,3 +9,5 @@
 *_files
 .DS_Store
 *_cache
+scratch.R
+*presentation*

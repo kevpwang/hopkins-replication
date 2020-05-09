@@ -32,29 +32,37 @@ exp2_cleaned <- read_rds("clean-data/exp2_cleaned.rds") %>%
 
 # Abstract
 
-Hopkins (2015) finds that exposing a nationally representative sample of Americans to video of an immigrant speaking accented English causes the respondents to adopt more inclusionary attitudes. I successfully replicated Hopkins's results, except for a minor manipulation check and the composite immigration index. As an extension, I modified the original regression by adding respondents' self-reported familiarity with Spanish in real life. I found that respondents who reported more frequent encounters with Spanish tended to hold more restrictionist views. This result suggests the difficulty of changing exclusionary attitudes developed through long-term contact with culturally distinctive traits in daily life.
+Hopkins (2015) finds that exposing a nationally representative sample of Americans to video of an immigrant speaking accented English causes the respondents to adopt more inclusionary attitudes. I successfully replicated Hopkins's results, except for minor manipulation and robustness checks and the composite immigration index. As an extension, I modified the original regression by adding respondents' self-reported familiarity with Spanish in real life. I found that respondents who reported more frequent encounters with Spanish tended to hold more restrictionist views. This result suggests the difficulty of changing exclusionary attitudes developed through long-term contact with culturally distinctive traits in daily life.
 
 # Introduction
 
-@hopkins tests prior hypotheses about natives' responses to culturally distinctive immigrants. Hopkins shows two nationally representative samples of non-Hispanic Americans video, adapted from an ABC news clip, of an undocumented Hispanic immigrant expressing support for assimilation and a path to citizenship. The video is edited such that the immigrant is visibly either dark- or light-skinned and speaks either fluent Spanish, fluent English, or heavily accented English. Afterwards, respondents are surveyed about a path to citizenship for undocumented immigrants, as well as other immigration-related questions. Hopkins runs OLS and logistic regressions on responses to these questions using indicators for treatment as well as conservatism, gender, and other respondent traits. Contrary to prior results like @blairetal suggesting the primacy of skin tone, Hopkins finds that skin tone does not meaningfully shift attitudes. Moreover, there is no difference between responses to fluent English or Spanish, but significantly more pro-immigrant responses to broken English. Hopkins theorizes that rather than heightening perceptions of cultural difference, a broken English speaker reinforces positive stereotypes about norms of hard work and assimilation.
+@hopkins tests prior hypotheses about natives' responses to culturally distinctive immigrants. Hopkins conducts two surveys in August 2010 and January 2011. In both, he shows two nationally representative samples of non-Hispanic Americans video, adapted from an ABC news clip, of an undocumented Hispanic immigrant expressing support for assimilation and a path to citizenship. The video is edited such that the immigrant is visibly either dark- or light-skinned and speaks either fluent Spanish, fluent English, or heavily accented English. Afterwards, respondents are surveyed about a path to citizenship for undocumented immigrants, as well as four immigration-related questions. Hopkins then runs OLS and logistic regressions on responses to these questions using indicators for treatment as well as conservatism, gender, and other respondent traits. Contrary to prior results like @blairetal suggesting the primacy of skin tone, Hopkins finds that skin tone does not meaningfully shift attitudes. Moreover, there is no difference between responses to fluent English or Spanish, but significantly more pro-immigrant responses to broken English. Hopkins theorizes that rather than heightening perceptions of cultural difference, a broken English speaker reinforces positive stereotypes about norms of hard work and assimilation.
 
-I obtained data from Hopkins's webpage ^[Data and codebooks from @Hopkins may be found at http://web.sas.upenn.edu/danhop/research/]. All replication code was written in R^[@R] and may be found in my Github repo^[https://github.com/kevpwang/hopkins-replication].
+I obtained data from Hopkins's webpage ^[Data and codebooks from @hopkins may be found at http://web.sas.upenn.edu/danhop/research/]. All replication code was written in R^[@R] and may be found in my Github repo^[https://github.com/kevpwang/hopkins-replication].
+
+I successfully replicated all of Hopkins's results with three exceptions. First, I did not replicate a manipulation check that asked respondents to guess the immigrant's likely country of origin, thus establishing that respondents perceived the treatment in a sensible way. Second, for technical reasons, I was unable to replicate the free step-down resampling method for generating corrected p-values for regression parameters. Third, I was unable to replicate a composite index of six immigration-related questions because @hopkins did not specify the method by which the index was created. None of these significantly affect Hopkins's substantive conclusions.
+
+Hopkins's surveys include a question asking respondents about their familiarity with Spanish in daily life. Given that the majority of respondents reported hearing Spanish at least once a week, I modified Hopkins's regressions on immigration-related questions to include responses to this "familiarity" question as an indicator. I found that greater preexisting familiarity with Spanish was associated with more exclusionary attitudes. This runs contrary to prior studies like @enos, which found that exposing commuters to culturally distinctive traits which were specifically *non-familiar* resulted in initially hostile responses that softened with greater familiarity over time. While not contradicting Hopkins's findings about accented English, my extension suggests that long-term contact with culturally distinctive traits outside of the experimental setting may engender exclusionary attitudes which are deep-seated and difficult to counteract.
 
 # Literature Review
 
-Previous literature develops several theories to predict and explain responses to culturally distinctive traits. The ethnocentrism-based approach, outlined in @kinderkam, holds that individuals are predisposed to divide society into in-groups and out-groups. On the other hand, other hypotheses, like @webercrocker, propound the primacy of skin-tone and argue that darker skin tone is determinative of more exclusionary attitudes.
+Prior literature develops several theories to predict and explain responses to culturally distinctive traits. The ethnocentrism-based approach^[@kinderkam] postulates that individuals are predisposed to divide society into in-groups and out-groups. What distinguishes ethnocentrism from mere prejudice is indiscriminatory hostility by the in-group toward all out-groups, rather than specific hostility directed at one particular out-group based on particular group characteristics. @snidermanetal finds that native Italians hold similar attitudes toward both African and Eastern European immigrants. The implication of ethnocentrism is what @hopkins terms the "interchangeable out-group hypothesis". Under this hypothesis, characteristics like speaking a foreign language consistently elicit opposition by conspicuously marking an individual as a member of an out-group.
+
+Extending the interchangeable out-group hypothesis, some studies contend that darker skin tone in particular prompts exclusionary attitudes. @blairetal shows that individuals, even when they can identify Afrocentric facial features and are aware of their own cognitive processes, are not able to avoid using such features to reinforce racial stereotypes.
+
+On the other hand, other studies postulate that exclusionary attitudes only arise in response to culturally distinctive traits that specifically reinforce preexisting negative stereotypes. @gilens finds that non-black Americans are not automatically hostile towards African-Americans, but only respond negatively to the extent that African-Americans are perceived to violate traditional norms of hard work. This leads to what @hopkins terms the "upside of accents hypothesis", in which responses to a culturally distinctive trait are highly dependent the content and context of that trait.
 
 # Replication
 
-The replication is based on @king. I was able to replicate all but three charts and tables from @hopkins. I am not able to replicate Appendix A, Figure 1 because it is not entirely clear where that data is in the dataset and how to process it, but I anticipate coming up with a method soon. I can only partially replicate Figure 4 and Appendix C, Table 4 because the method for calculating the six-question index is not specified anywhere in the paper; I may have to email Hopkins and ask. The only additional aspect I am unable to replicate is the "free step-down resampling method" for generating the appropriate corrected p-values for Figure 3.
+I successfully replicated all but three of Hopkins. First, I did not replicate a manipulation check that asked respondents to guess the immigrant's likely country of origin, thus establishing that respondents perceived the treatment in a sensible way. Second, for technical reasons, I was unable to replicate the free step-down resampling method for generating corrected p-values for regression parameters. Third, I was unable to replicate a composite index of six immigration-related questions because @hopkins did not specify the method by which the index was created. None of these significantly affect Hopkins's substantive conclusions.
 
 # Extension
 
 In both the August 2010 and January 2011 surveys, all respondents were asked the following question: "In your day-to-day life, how frequently do you hear Spanish spoken? Never or almost never, less than once a month, 1-3 times each month, at least once a week, or every day?" I extend @hopkins by incorporating responses to this question in the regression models for immigration-related questions.
 
-This "familiarity with Spanish" question could be reasonably expected to be an important explainer of immigration attitudes. In each survey, approximately 35 percent of respondents heard Spanish spoken every day, and about another 30 percent heard Spanish spoken at least once a week. Therefore, the apparent lack of exclusionary responses to "culturally distinctive" traits may be influenced by such widespread familiarity with Spanish among respondents, whereas other respondents less familiar with Spanish in their daily lives may exhibit more exclusionary responses for which the current analysis is not accounting. There is evidence for hostile responses to specifically *non-familiar* culturally distinctive traits in an experimental setting. For example, @enos finds that when Spanish speakers were introduced to a predominantly white, upper-income subway commute route, overall attitudes toward immigration become more exclusionary. It might similarly be the case in @hopkins that the only reason why fluent Spanish and broken English treatments do not prompt hostility is because the vast majority of respondents were already familiar with Spanish.
+This "familiarity with Spanish" question could be reasonably expected to be an important explainer of immigration attitudes. In each survey, approximately 35 percent of respondents heard Spanish spoken every day, and about another 30 percent heard Spanish spoken at least once a week. Therefore, the apparent lack of exclusionary responses to "culturally distinctive" traits may be influenced by such widespread familiarity with Spanish among respondents, whereas other respondents less familiar with Spanish in their daily lives may exhibit more exclusionary responses for which the current analysis is not accounting. Prior evidence in an experimental setting supports the hypothesis that hostility arises in response to specifically *non-familiar* culturally distinctive traits. For example, @enos finds that when Spanish speakers were introduced to a predominantly white, upper-income subway commute route, overall attitudes toward immigration become more exclusionary. It might similarly be the case in @hopkins that the only reason why fluent Spanish and broken English treatments do not prompt widespread hostility is because the vast majority of respondents were already familiar with Spanish.
 
-```{r Exp 1 extension, echo = FALSE}
+```{r Exp 1 ext models, echo = FALSE}
 
 ext1_q7 <- exp1_cleaned %>% 
   
@@ -63,44 +71,51 @@ ext1_q7 <- exp1_cleaned %>%
   filter(ppethm != "Hispanic") %>% 
   filter(q7 != -1 & q14 != -1)
 
-q7_model <- stan_glm(q7 ~ dark + accented + q14 + spanish + no_video + years_educ + conservative + republican + 
-                       black + male, data = ext1_q7, refresh = 0)
+q7_model <- lm(q7 ~ dark + accented + q14 + spanish + no_video + years_educ + conservative + republican + 
+                       black + male, data = ext1_q7)
 
 ext1_q8 <- exp1_cleaned %>% 
   filter(ppethm != "Hispanic") %>% 
   filter(q8 != -1)
 
-q8_model <- stan_glm(q8 ~ dark + accented + q14 + spanish + no_video + years_educ + conservative + republican + 
-                       black + male, data = ext1_q8, refresh = 0)
+q8_model <- lm(q8 ~ dark + accented + q14 + spanish + no_video + years_educ + conservative + republican + 
+                       black + male, data = ext1_q8)
 
 ext1_q9 <- exp1_cleaned %>% 
   filter(ppethm != "Hispanic") %>% 
   filter(q9 != -1)
 
-q9_model <- stan_glm(q9 ~ dark + accented + q14 + spanish + no_video + years_educ + conservative + republican + 
-                       black + male, data = ext1_q9, refresh = 0)
+q9_model <- lm(q9 ~ dark + accented + q14 + spanish + no_video + years_educ + conservative + republican + 
+                       black + male, data = ext1_q9)
 
 ext1_q10 <- exp1_cleaned %>% 
   filter(ppethm != "Hispanic") %>% 
   filter(q10 != -1)
 
-q10_model <- stan_glm(q10 ~ dark + accented + q14 + spanish + no_video + years_educ + conservative + republican + 
-                       black + male, data = ext1_q10, refresh = 0)
+q10_model <- lm(q10 ~ dark + accented + q14 + spanish + no_video + years_educ + conservative + republican + 
+                       black + male, data = ext1_q10)
 
 ext1_q12a <- exp1_cleaned %>% 
   filter(ppethm != "Hispanic") %>% 
   drop_na(q12a) %>% 
   filter(q12a != -1)
 
-q12a_model <- stan_glm(q12a ~ dark + accented + q14 + spanish + no_video + years_educ + conservative + republican + 
-                       black + male, data = ext1_q12a, refresh = 0)
+q12a_model <- lm(q12a ~ dark + accented + q14 + spanish + no_video + years_educ + conservative + republican + 
+                       black + male, data = ext1_q12a)
 
 ext1_q13 <- exp1_cleaned %>% 
   filter(ppethm != "Hispanic") %>% 
   filter(q13 != -1)
 
-q13_model <- stan_glm(q13 ~ dark + accented + q14 + spanish + no_video + years_educ + conservative + republican + 
-                       black + male, data = ext1_q13, refresh = 0)
+q13_model <- lm(q13 ~ dark + accented + q14 + spanish + no_video + years_educ + conservative + republican + 
+                       black + male, data = ext1_q13)
+```
+
+```{r Exp 1 Q7 ext, echo = FALSE, results = "asis"}
+stargazer(q7_model,
+          title = "OLS Regression of Support for a Pathway to Naturalization, Including Respondent Familiarity with Spanish",
+          digits = 3,
+          header = FALSE)
 ```
 
 ```{r Exp 1 ext graph, echo = FALSE}
@@ -236,13 +251,23 @@ q13_plot <- ggplot(parameters, aes(x = condition, y = coef)) +
         axis.text = element_text(size = 5)
         )
 
-ggarrange(q7_plot, q12a_plot, q9_plot, q10_plot, q13_plot, q8_plot,
+x <- ggarrange(q7_plot, q12a_plot, q9_plot, q10_plot, q13_plot, q8_plot,
                    ncol = 3, nrow = 2)
 ```
 
-I modified the regressions on all six original questions from @hopkins to include familiarity with Spanish. The question is coded on a numerical scale from 1 to 5 with 5 as hearing Spanish "every day". The results of the analysis are surprising and run counter to expectations. Since @hopkins finds that responses to the "increased legal immigration" question are correlated differently than the other questions, we will set aside that question as similarly anomalous. As the figure above shows, on all four remaining immigration-related questions, the effect of familarity with Spanish is exactly opposite that of accented English. Respondents who are more familiar with Spanish in daily life tend to record more exclusionary responses. For most questions, the familiarity coefficient is significantly smaller than the coefficient of accented English, but the associated uncertainty is also significantly smaller, indicating that the effect is likely to be consistent.
+I modified the regressions on all six original questions from @hopkins to include familiarity with Spanish as an indicator. The indicator, labelled `q141, is coded on a numerical scale from 1 to 5, with 5 as hearing Spanish "every day". The results of the analysis are surprising and run counter to expectations. Since @hopkins finds that responses to the "increased legal immigration" question are correlated differently than the other questions, we will set aside that question as similarly anomalous. But on all four remaining immigration-related questions, the effect of familarity with Spanish is exactly opposite that of accented English. Respondents who are more familiar with Spanish in daily life tend to develop *more*, not less, exclusionary attitudes. 
 
-This extension of the model does not necessarily change the fundamental conclusions of @hopkins. The chief finding, that accented English elicits inclusionary rather than exclusionary responses, remains valid and the effect is unchanged by the new model. Rather, the extension raises questions about the preconditions that would cause positive or negative reactions in response to "culturally distinctive" traits. Contrary to @enos, the data from @hopkins suggest that lack of familiarity does not necessarily result in hostility, nor does prolonged familiarity abate hostility. Further inquiry is needed on the effects of long-term exposure to cultural diversity.
+The coefficient of familiarity shows the exclusionary shift for each additional "unit" of familiarity--that is, the more frequently a respondent encounters Spanish in daily life. Given that a substantial majority of respondents were at least 4 on the familiarity scale, the negative effect of familiarity is at least as large as the positive effect of accented English. The uncertainty associated with the familiarity coefficient is very small, indicating that the effect is likely to be consistent.
+
+This extension of the model does not necessarily change the fundamental conclusions of @hopkins. The chief finding, that accented English elicits inclusionary rather than exclusionary responses, remains valid and the effect is unchanged by the new model. Rather, the extension raises questions about the preconditions that would cause positive or negative reactions in response to "culturally distinctive" traits. Contrary to @enos, the data from @hopkins suggest that lack of familiarity does not necessarily result in hostility, nor does prolonged familiarity abate hostility.
+
+# Conclusion
+
+@hopkins tests the 'interchangeable out-group' and 'upside of accents' hypotheses through two surveys. He exposes respondents to a video of an immigrant expressing support for assimilation and a path to citizenship, manipulating the video such that the immigrant is either light- or dark-skinned and speaks either fluent English, fluent Spanish, or accented English. Hopkins finds that neither skin tone nor Spanish significantly alters attitudes. Moreover, respondents who received the accented English treatment display more pro-immigrant attitudes when surveyed about a path to citizenship and other immigration-related questions. He theorizes that accented English in conjunction with a pro-assimilation message activates positive immigrant stereotypes relating to hard work.
+
+I successfully replicated Hopkins's substantive results and extended his model by incorporating respondents' self-reported familiarity with Spanish as an indicator. I hypothesized that respondents who were already familiar with Spanish in daily life may have been more predisposed to accept positive immigrant stereotypes. I found, however, that familiarity with Spanish was strongly associated with more, not less, exclusionary attitudes on a scale comparable with or even exceeding the effect of accented English. Since Spanish is a conspicuous marker of out-group status, this supports ethnocentrism-based theories of response to culturally distinctive traits.
+
+My results do not directly contradict Hopkins's findings about the effect of accented English, but they do suggest that multiple factors are at play in the formation of exclusionary attitudes. One possible factor relates to duration. Given the scale of the familiarity effect, it may be the case that constant, long-term exposure to out-group traits creates a heightened, deeply engrained baseline of hostile response. In this way, familiarity with Spanish is akin to other respondent traits like conservatism and partisanship. Another possible factor is the difference between exposure in a real-life rather than media setting. It may be that real-life encounters with Spanish activates a visceral sense of threat that an impersonal, distant encounter in the context of a media excerpt does not. Whatever the explanation, my findings support the idea that both ethnocentrism- and specific stereotype-based hypotheses about demographic threat can coexist. Further research may focus on designing experiments to more specifically measure how these two types of mechanism interact.
 
 # (APPENDIX) Appendix {-} 
 
