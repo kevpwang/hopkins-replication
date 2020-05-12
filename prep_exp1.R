@@ -54,7 +54,7 @@ exp1_cleaned <- exp1 %>%
                       "Extremely Likely" = 1,
                       "Refused" = -1)
          ) %>% 
-  mutate(q14 = recode(q14, "Every Day" = 5,
+  mutate(span_contact = recode(q14, "Every Day" = 5,
                       "At Least Once a Week" = 4,
                       "1-3 Times Each Month" = 3,
                       "Less than Once a Month" = 2,
@@ -128,7 +128,7 @@ exp1_cleaned <- exp1 %>%
                            TRUE ~ 0)) %>% 
   mutate(male = recode(ppgender, "Male" = 1,
                        "Female" = 0)) %>% 
-  select(q7, q8, q9, q10, q12a, q13, q14, dark, accented, no_video, spanish, english, income, years_educ, online, employed, conservative,
+  select(q7, q8, q9, q10, q12a, q13, span_contact, dark, accented, no_video, spanish, english, income, years_educ, online, employed, conservative,
          republican, black, other, male, ppage, ppethm)
 
 write_rds(exp1_cleaned, "clean-data/exp1_cleaned.rds")
